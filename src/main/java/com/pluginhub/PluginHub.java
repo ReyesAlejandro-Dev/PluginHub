@@ -2,135 +2,132 @@ package com.pluginhub;
 
 import com.pluginhub.commands.*;
 import com.pluginhub.managers.PluginDownloader;
-import org.bukkit.Bukkit;
+import com.pluginhub.utils.ColorLogger;
+import com.pluginhub.utils.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class PluginHub extends JavaPlugin {
+import java.util.Objects;
+import java.util.logging.Level;
+
+/**
+ * PluginHub - Gestor centralizado de plugins para servidores Paper
+ * 
+ * @author Pecar
+ * @version 1.0.0
+ */
+public final class PluginHub extends JavaPlugin {
 
     private PluginDownloader pluginDownloader;
-    
-    // Códigos de color ANSI para consola
-    private static final String RESET = "\u001B[0m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String CYAN = "\u001B[36m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String RED = "\u001B[31m";
-    private static final String PURPLE = "\u001B[35m";
-    private static final String WHITE = "\u001B[37m";
-    private static final String BOLD = "\u001B[1m";
-    private static final String BLUE = "\u001B[34m";
+    private ConfigManager configManager;
+    private ColorLogger colorLogger;
 
     @Override
     public void onEnable() {
-        // Log inicial con ASCII Art colorido
-        printBanner();
+        try {
+            // Inicializar utilidades
+            this.colorLogger = new ColorLogger(this);
+            colorLogger.printBanner(getDescription().getVersion());
 
-        // Inicializar el descargador
-        this.pluginDownloader = new PluginDownloader(this);
-        logSuccess("PluginDownloader inicializado");
+            // Cargar configuración
+            initializeConfiguration();
 
-        // Registrar comandos
-        registerCommands();
+            // Inicializar managers
+            initializeManagers();
 
-        // Crear carpeta de plugins si no existe
-        if (!getDataFolder().exists()) {
-            getDataFolder().mkdirs();
-            logInfo("Carpeta de datos creada");
+            // Registrar comandos
+            registerCommands();
+
+            // Mensaje de éxito
+            colorLogger.logSuccess("PluginHub iniciado correctamente");
+            colorLogger.printSeparator();
+
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Error crítico durante la inicialización", e);
+            getServer().getPluginManager().disablePlugin(this);
         }
-
-        // Mensaje final de éxito
-        logSuccess("PluginHub iniciado correctamente!");
-        printSeparator();
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getConsoleSender().sendMessage("");
-        Bukkit.getConsoleSender().sendMessage(RED + BOLD + "  ✖ " + RESET + RED + "PluginHub " + YELLOW + "v" + getDescription().getVersion() + RED + " deshabilitado" + RESET);
-        Bukkit.getConsoleSender().sendMessage("");
+        try {
+            // Cleanup de recursos
+            if (pluginDownloader != null) {
+                pluginDownloader.shutdown();
+            }
+
+            colorLogger.logShutdown(getDescription().getVersion());
+        } catch (Exception e) {
+            getLogger().log(Level.WARNING, "Error durante el apagado", e);
+        }
     }
 
-    private void printBanner() {
-        Bukkit.getConsoleSender().sendMessage("");
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ╔══════════════════════════════════════════════════════╗" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + RESET + "                                                      " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ██████╗ ██╗     ██╗   ██╗ ██████╗ ██╗███╗   ██╗  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ██╔══██╗██║     ██║   ██║██╔════╝ ██║████╗  ██║  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ██████╔╝██║     ██║   ██║██║  ███╗██║██╔██╗ ██║  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ██╔═══╝ ██║     ██║   ██║██║   ██║██║██║╚██╗██║  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ██║     ███████╗╚██████╔╝╚██████╔╝██║██║ ╚████║  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + CYAN + BOLD + "    ╚═╝     ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝╚═╝  ╚═══╝  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + RESET + "                                                      " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + YELLOW + "              ★ " + WHITE + "HUB" + YELLOW + " ★                                 " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + RESET + "                                                      " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ╠══════════════════════════════════════════════════════╣" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + GREEN + "  ● " + WHITE + "Versión: " + YELLOW + "v" + getDescription().getVersion() + WHITE + "                                    " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + GREEN + "  ● " + WHITE + "Autor: " + CYAN + "Tu Nombre" + WHITE + "                                  " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ║" + GREEN + "  ● " + WHITE + "Gestor centralizado de plugins" + WHITE + "                    " + PURPLE + "║" + RESET);
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ╚══════════════════════════════════════════════════════╝" + RESET);
-        Bukkit.getConsoleSender().sendMessage("");
+    /**
+     * Inicializa la configuración del plugin
+     */
+    private void initializeConfiguration() {
+        saveDefaultConfig();
+        this.configManager = new ConfigManager(this);
+        configManager.loadConfig();
+        colorLogger.logSuccess("Configuración cargada");
     }
 
-    private void printSeparator() {
-        Bukkit.getConsoleSender().sendMessage(PURPLE + "  ══════════════════════════════════════════════════════" + RESET);
-        Bukkit.getConsoleSender().sendMessage("");
+    /**
+     * Inicializa los managers del plugin
+     */
+    private void initializeManagers() {
+        this.pluginDownloader = new PluginDownloader(this, configManager);
+        colorLogger.logSuccess("PluginDownloader inicializado");
+
+        // Crear carpeta de datos si no existe
+        if (!getDataFolder().exists() && getDataFolder().mkdirs()) {
+            colorLogger.logInfo("Carpeta de datos creada");
+        }
     }
 
+    /**
+     * Registra todos los comandos del plugin
+     */
     private void registerCommands() {
-        // Comando principal
-        getCommand("pluginhub").setExecutor(new PluginHubCommand(this));
-        getCommand("phsearch").setExecutor(new PluginSearchCommand(this, pluginDownloader));
-        getCommand("phinstall").setExecutor(new PluginInstallCommand(this, pluginDownloader));
-        getCommand("phupdate").setExecutor(new PluginUpdateCommand(this, pluginDownloader));
+        registerCommand("pluginhub", new PluginHubCommand(this));
+        registerCommand("phsearch", new PluginSearchCommand(this, pluginDownloader));
+        registerCommand("phinstall", new PluginInstallCommand(this, pluginDownloader));
+        registerCommand("phupdate", new PluginUpdateCommand(this, pluginDownloader));
 
-        logSuccess("Comandos registrados:");
-        logCommand("/pluginhub", "Comando principal");
-        logCommand("/phsearch", "Buscar plugins");
-        logCommand("/phinstall", "Instalar plugins");
-        logCommand("/phupdate", "Actualizar plugins");
+        colorLogger.logSuccess("Comandos registrados");
+        logRegisteredCommands();
+    }
+
+    /**
+     * Registra un comando individual con validación
+     */
+    private void registerCommand(String name, org.bukkit.command.CommandExecutor executor) {
+        Objects.requireNonNull(getCommand(name), "Comando no encontrado en plugin.yml: " + name)
+                .setExecutor(executor);
+    }
+
+    /**
+     * Muestra los comandos registrados en consola
+     */
+    private void logRegisteredCommands() {
+        colorLogger.logCommand("/pluginhub", "Comando principal");
+        colorLogger.logCommand("/phsearch", "Buscar plugins");
+        colorLogger.logCommand("/phinstall", "Instalar plugins");
+        colorLogger.logCommand("/phupdate", "Actualizar plugins");
     }
 
     // ═══════════════════════════════════════════════════════
-    //  Métodos de logging personalizados
+    //  Getters públicos
     // ═══════════════════════════════════════════════════════
-
-    public void logSuccess(String message) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │ " + GREEN + "✔ " + WHITE + message + RESET
-        );
-    }
-
-    public void logInfo(String message) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │ " + CYAN + "ℹ " + WHITE + message + RESET
-        );
-    }
-
-    public void logWarning(String message) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │ " + YELLOW + "⚠ " + YELLOW + message + RESET
-        );
-    }
-
-    public void logError(String message) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │ " + RED + "✖ " + RED + message + RESET
-        );
-    }
-
-    public void logCommand(String command, String description) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │   " + YELLOW + "→ " + CYAN + command + WHITE + " - " + BLUE + description + RESET
-        );
-    }
-
-    public void logDownload(String pluginName, String status) {
-        Bukkit.getConsoleSender().sendMessage(
-            PURPLE + "  │ " + BLUE + "⬇ " + WHITE + pluginName + " - " + CYAN + status + RESET
-        );
-    }
 
     public PluginDownloader getPluginDownloader() {
         return pluginDownloader;
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    public ColorLogger getColorLogger() {
+        return colorLogger;
     }
 }

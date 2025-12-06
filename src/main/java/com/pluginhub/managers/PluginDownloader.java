@@ -1,182 +1,320 @@
 package com.pluginhub.managers;
 
+import com.pluginhub.models.PluginInfo;
+import com.pluginhub.utils.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 
-public class PluginDownloader {
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+
+/**
+ * Gestor de descarga e instalación de plugins
+ */
+public final class PluginDownloader {
 
     private final JavaPlugin plugin;
-    private final Map<String, PluginInfo> pluginCache = new HashMap<>();
+    private final ConfigManager configManager;
+    private final Map<String, PluginInfo> pluginCache;
+    private final ExecutorService executorService;
+    private final Map<String, Long> downloadCache;
 
-    public PluginDownloader(JavaPlugin plugin) {
+    private static final int BUFFER_SIZE = 8192;
+    private static final String USER_AGENT = "PluginHub/1.0";
+
+    public PluginDownloader(JavaPlugin plugin, ConfigManager configManager) {
         this.plugin = plugin;
-        initializeCache();
+        this.configManager = configManager;
+        this.pluginCache = new ConcurrentHashMap<>();
+        this.executorService = Executors.newFixedThreadPool(3);
+        this.downloadCache = new ConcurrentHashMap<>();
+        
+        initializePluginDatabase();
     }
 
-    // Base de datos simulada de plugins populares (en v2.0 usarás APIs reales)
-    private void initializeCache() {
-        // SpigotMC popular plugins
-        pluginCache.put("essentialsx", new PluginInfo(
+    /**
+     * Inicializa la base de datos de plugins disponibles
+     */
+    private void initializePluginDatabase() {
+        // Plugins populares de SpigotMC
+        addPlugin("essentialsx", new PluginInfo(
                 "EssentialsX",
                 "2.20.1",
                 "https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/Essentials/target/EssentialsX-2.20.1.jar",
                 "https://www.spigotmc.org/resources/essentialsx.9089/",
-                "Essential commands and utilities"
+                "Essential commands and utilities for Minecraft servers"
         ));
 
-        pluginCache.put("luckperms", new PluginInfo(
+        addPlugin("luckperms", new PluginInfo(
                 "LuckPerms",
                 "5.4.121",
-                "https://download.luckperms.net/latest/luckperms-bukkit.jar",
-                "https://www.spigotmc.org/resources/luckperms.34309/",
-                "Advanced permissions management"
+                "https://download.luckperms.net/1556/bukkit/loader/LuckPerms-Bukkit-5.4.121.jar",
+                "https://www.spigotmc.org/resources/luckperms.28140/",
+                "Advanced permissions management system"
         ));
 
-        pluginCache.put("worldedit", new PluginInfo(
+        addPlugin("worldedit", new PluginInfo(
                 "WorldEdit",
                 "7.2.15",
-                "https://builds.enginehub.org/job/WorldEdit/lastSuccessfulBuild/artifact/worldedit-bukkit-7.2.15-dist.jar",
+                "https://dev.bukkit.org/projects/worldedit/files/latest",
                 "https://dev.bukkit.org/projects/worldedit",
-                "World editing and building tool"
+                "In-game world editing and building tool"
         ));
 
-        pluginCache.put("vault", new PluginInfo(
+        addPlugin("vault", new PluginInfo(
                 "Vault",
                 "1.7.3",
-                "https://ci.enginehub.org/job/Vault/lastSuccessfulBuild/artifact/target/Vault.jar",
-                "https://www.spigotmc.org/resources/vault.41918/",
-                "Permission, chat and economy API"
+                "https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar",
+                "https://www.spigotmc.org/resources/vault.34315/",
+                "Permission, chat and economy API abstraction layer"
         ));
 
-        pluginCache.put("protocollib", new PluginInfo(
+        addPlugin("protocollib", new PluginInfo(
                 "ProtocolLib",
                 "5.1.0",
-                "https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar",
+                "https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/build/libs/ProtocolLib.jar",
                 "https://www.spigotmc.org/resources/protocollib.1997/",
-                "Protocol packet manipulation"
+                "Protocol packet manipulation library"
         ));
 
-        pluginCache.put("plotsquared", new PluginInfo(
+        addPlugin("plotsquared", new PluginInfo(
                 "PlotSquared",
                 "7.3.8",
-                "https://ci.intellectualsites.com/job/PlotSquared-Bukkit/lastSuccessfulBuild/artifact/target/PlotSquared-Bukkit-7.3.8.jar",
-                "https://www.spigotmc.org/resources/plotsquared.1177/",
-                "Plotworld and claiming system"
+                "https://github.com/IntellectualSites/PlotSquared/releases/latest",
+                "https://www.spigotmc.org/resources/plotsquared-v6.77506/",
+                "Advanced plot world management system"
+        ));
+
+        addPlugin("coreprotect", new PluginInfo(
+                "CoreProtect",
+                "22.2",
+                "https://www.spigotmc.org/resources/coreprotect.8631/download",
+                "https://www.spigotmc.org/resources/coreprotect.8631/",
+                "Fast and efficient block logging and rollback tool"
+        ));
+
+        addPlugin("citizens", new PluginInfo(
+                "Citizens",
+                "2.0.33",
+                "https://ci.citizensnpcs.co/job/Citizens2/lastSuccessfulBuild/artifact/dist/target/Citizens-2.0.33-b3290.jar",
+                "https://www.spigotmc.org/resources/citizens.13811/",
+                "Advanced NPC creation and management"
         ));
     }
 
-    // Buscar plugin en la base de datos local
+    /**
+     * Añade un plugin al caché
+     */
+    private void addPlugin(String key, PluginInfo info) {
+        pluginCache.put(key.toLowerCase(), info);
+    }
+
+    /**
+     * Busca plugins por nombre o descripción
+     */
     public List<PluginInfo> searchPlugins(String query) {
-        List<PluginInfo> results = new ArrayList<>();
-        String lowerQuery = query.toLowerCase();
-
-        for (Map.Entry<String, PluginInfo> entry : pluginCache.entrySet()) {
-            if (entry.getValue().getName().toLowerCase().contains(lowerQuery) ||
-                    entry.getKey().toLowerCase().contains(lowerQuery) ||
-                    entry.getValue().getDescription().toLowerCase().contains(lowerQuery)) {
-                results.add(entry.getValue());
-            }
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return results;
+        String lowerQuery = query.toLowerCase().trim();
+
+        return pluginCache.entrySet().stream()
+                .filter(entry -> matchesQuery(entry, lowerQuery))
+                .map(Map.Entry::getValue)
+                .limit(10)
+                .collect(Collectors.toList());
     }
 
-    // Obtener información específica de un plugin
+    /**
+     * Verifica si un plugin coincide con la búsqueda
+     */
+    private boolean matchesQuery(Map.Entry<String, PluginInfo> entry, String query) {
+        PluginInfo info = entry.getValue();
+        return entry.getKey().contains(query) ||
+               info.getName().toLowerCase().contains(query) ||
+               info.getDescription().toLowerCase().contains(query);
+    }
+
+    /**
+     * Obtiene información de un plugin específico
+     */
     public PluginInfo getPluginInfo(String pluginName) {
-        return pluginCache.get(pluginName.toLowerCase());
+        if (pluginName == null || pluginName.trim().isEmpty()) {
+            return null;
+        }
+        return pluginCache.get(pluginName.toLowerCase().trim());
     }
 
-    // Descargar plugin
-    public boolean downloadPlugin(String pluginName, File destination) {
-        PluginInfo info = getPluginInfo(pluginName);
-        if (info == null) {
-            return false;
-        }
+    /**
+     * Descarga un plugin desde su URL
+     */
+    public CompletableFuture<Boolean> downloadPluginAsync(String pluginName, File destination) {
+        return CompletableFuture.supplyAsync(() -> {
+            PluginInfo info = getPluginInfo(pluginName);
+            if (info == null) {
+                plugin.getLogger().warning("Plugin no encontrado: " + pluginName);
+                return false;
+            }
 
-        try {
-            plugin.getLogger().info("⏳ Descargando " + info.getName() + " v" + info.getVersion() + "...");
-            
-            URL url = new URL(info.getDownloadUrl());
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
+            return downloadWithRetry(info, destination);
+        }, executorService);
+    }
 
-            try (InputStream in = connection.getInputStream();
-                 FileOutputStream out = new FileOutputStream(destination)) {
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
+    /**
+     * Descarga con reintentos automáticos
+     */
+    private boolean downloadWithRetry(PluginInfo info, File destination) {
+        int maxRetries = configManager.getDownloadRetries();
+        int timeout = configManager.getDownloadTimeout();
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                plugin.getLogger().info(String.format("⏳ Descargando %s v%s (intento %d/%d)...", 
+                        info.getName(), info.getVersion(), attempt, maxRetries));
+
+                if (performDownload(info.getDownloadUrl(), destination, timeout)) {
+                    plugin.getLogger().info("✓ " + info.getName() + " descargado correctamente");
+                    return true;
+                }
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING, 
+                        String.format("Error en intento %d/%d: %s", attempt, maxRetries, e.getMessage()));
+                
+                if (attempt < maxRetries) {
+                    try {
+                        Thread.sleep(2000 * attempt); // Backoff exponencial
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return false;
+                    }
                 }
             }
-
-            plugin.getLogger().info("✓ " + info.getName() + " descargado correctamente");
-            return true;
-        } catch (IOException e) {
-            plugin.getLogger().warning("✗ Error descargando " + pluginName + ": " + e.getMessage());
-            return false;
-        }
-    }
-
-    // Instalar plugin en la carpeta de plugins
-    public boolean installPlugin(String pluginName) {
-        PluginInfo info = getPluginInfo(pluginName);
-        if (info == null) {
-            return false;
         }
 
-        File pluginsFolder = new File(plugin.getServer().getPluginsFolder(), pluginName + ".jar");
-        
-        if (downloadPlugin(pluginName, pluginsFolder)) {
-            plugin.getLogger().info("✓ " + info.getName() + " instalado. Reinicia el servidor para activar.");
-            return true;
-        }
+        plugin.getLogger().severe("✗ Falló la descarga de " + info.getName() + " después de " + maxRetries + " intentos");
         return false;
     }
 
-    // Obtener lista de plugins instalados
-    public List<String> getInstalledPlugins() {
-        File pluginsFolder = plugin.getServer().getPluginsFolder();
-        List<String> plugins = new ArrayList<>();
+    /**
+     * Realiza la descarga del archivo
+     */
+    private boolean performDownload(String urlString, File destination, int timeout) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        
+        try {
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(timeout);
+            connection.setReadTimeout(timeout);
+            connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection.setInstanceFollowRedirects(true);
 
-        if (pluginsFolder.exists() && pluginsFolder.isDirectory()) {
-            File[] files = pluginsFolder.listFiles((dir, name) -> name.endsWith(".jar"));
-            if (files != null) {
-                for (File file : files) {
-                    plugins.add(file.getName().replace(".jar", ""));
-                }
+            int responseCode = connection.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new IOException("HTTP error code: " + responseCode);
             }
-        }
 
-        return plugins;
+            // Crear directorio padre si no existe
+            File parentDir = destination.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            // Descargar archivo
+            try (InputStream in = new BufferedInputStream(connection.getInputStream());
+                 FileOutputStream out = new FileOutputStream(destination)) {
+                
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int bytesRead;
+                long totalBytes = 0;
+                
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+                }
+
+                plugin.getLogger().info(String.format("Descargados %.2f MB", totalBytes / 1024.0 / 1024.0));
+                return true;
+            }
+        } finally {
+            connection.disconnect();
+        }
     }
 
-    // Clase interna para almacenar información del plugin
-    public static class PluginInfo {
-        private final String name;
-        private final String version;
-        private final String downloadUrl;
-        private final String sourceUrl;
-        private final String description;
+    /**
+     * Instala un plugin en la carpeta de plugins del servidor
+     */
+    public CompletableFuture<Boolean> installPluginAsync(String pluginName) {
+        return CompletableFuture.supplyAsync(() -> {
+            PluginInfo info = getPluginInfo(pluginName);
+            if (info == null) {
+                return false;
+            }
 
-        public PluginInfo(String name, String version, String downloadUrl, String sourceUrl, String description) {
-            this.name = name;
-            this.version = version;
-            this.downloadUrl = downloadUrl;
-            this.sourceUrl = sourceUrl;
-            this.description = description;
+            File pluginsFolder = plugin.getServer().getPluginsFolder();
+            File destination = new File(pluginsFolder, info.getName() + ".jar");
+
+            try {
+                if (performDownload(info.getDownloadUrl(), destination, configManager.getDownloadTimeout())) {
+                    plugin.getLogger().info("✓ " + info.getName() + " instalado correctamente");
+                    downloadCache.put(pluginName.toLowerCase(), System.currentTimeMillis());
+                    return true;
+                }
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Error instalando " + pluginName, e);
+            }
+
+            return false;
+        }, executorService);
+    }
+
+    /**
+     * Obtiene la lista de plugins instalados en el servidor
+     */
+    public List<String> getInstalledPlugins() {
+        File pluginsFolder = plugin.getServer().getPluginsFolder();
+        
+        if (!pluginsFolder.exists() || !pluginsFolder.isDirectory()) {
+            return Collections.emptyList();
         }
 
-        public String getName() { return name; }
-        public String getVersion() { return version; }
-        public String getDownloadUrl() { return downloadUrl; }
-        public String getSourceUrl() { return sourceUrl; }
-        public String getDescription() { return description; }
+        File[] files = pluginsFolder.listFiles((dir, name) -> name.endsWith(".jar"));
+        
+        if (files == null || files.length == 0) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(files)
+                .map(File::getName)
+                .map(name -> name.replace(".jar", ""))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los plugins disponibles
+     */
+    public Collection<PluginInfo> getAllAvailablePlugins() {
+        return Collections.unmodifiableCollection(pluginCache.values());
+    }
+
+    /**
+     * Limpia recursos al desactivar el plugin
+     */
+    public void shutdown() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

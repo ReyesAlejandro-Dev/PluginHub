@@ -1,0 +1,44 @@
+# ═══════════════════════════════════════════════════════
+#  PluginHub - Configuración
+# ═══════════════════════════════════════════════════════
+
+# Configuración de descargas
+download:
+  # Tiempo máximo de espera para descargas (en milisegundos)
+  timeout: 30000
+  
+  # Número de reintentos en caso de fallo
+  retries: 3
+
+# Actualizaciones automáticas
+auto-update:
+  # Habilitar actualizaciones automáticas (v2.0)
+  enabled: false
+  
+  # Intervalo de verificación en horas
+  check-interval: 24
+
+# Sistema de caché
+cache:
+  # Habilitar caché de búsquedas
+  enabled: true
+  
+  # Duración del caché en minutos
+  duration-minutes: 60
+
+# Fuentes confiables de plugins
+trusted-sources:
+  - "https://www.spigotmc.org"
+  - "https://dev.bukkit.org"
+  - "https://github.com"
+  - "https://ci.dmulloy2.net"
+  - "https://ci.ender.zone"
+  - "https://download.luckperms.net"
+
+# Configuración de mensajes
+messages:
+  # Prefijo de mensajes
+  prefix: "§6[§ePluginHub§6]§r"
+  
+  # Idioma (en, es, fr, de)
+  language: "es"
