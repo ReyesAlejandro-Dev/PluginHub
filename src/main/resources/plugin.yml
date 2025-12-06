@@ -1,5 +1,5 @@
 name: PluginHub
-version: 1.0.0
+version: 2.0.0
 description: "Centralized plugin manager for Paper servers - Search, install, and update plugins from multiple repositories automatically"
 author: Pecar
 main: com.pluginhub.PluginHub

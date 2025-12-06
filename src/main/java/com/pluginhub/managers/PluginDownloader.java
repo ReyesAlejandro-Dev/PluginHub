@@ -122,13 +122,14 @@ public final class PluginDownloader {
                 }
             }, executorService));
 
-            // Buscar en BukkitDev
+            // Buscar en BukkitDev (puede estar bloqueado)
             futures.add(CompletableFuture.supplyAsync(() -> {
                 try {
                     plugin.getLogger().info("Buscando en BukkitDev...");
                     return bukkitAPI.searchPlugins(query, SEARCH_LIMIT);
                 } catch (IOException e) {
-                    plugin.getLogger().warning("Error buscando en BukkitDev: " + e.getMessage());
+                    // BukkitDev frecuentemente bloquea requests, no mostrar warning
+                    plugin.getLogger().fine("BukkitDev no disponible: " + e.getMessage());
                     return Collections.emptyList();
                 }
             }, executorService));

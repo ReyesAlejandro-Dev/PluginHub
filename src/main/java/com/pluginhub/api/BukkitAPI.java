@@ -52,7 +52,9 @@ public class BukkitAPI {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Error buscando en BukkitDev: " + response.code());
+                // BukkitDev puede bloquear requests, retornar lista vacía silenciosamente
+                logger.fine("BukkitDev no disponible (código " + response.code() + "), continuando con otras fuentes");
+                return results;
             }
 
             String html = response.body().string();
