@@ -108,10 +108,11 @@ public final class PluginUpdateCommand implements CommandExecutor, TabCompleter 
         }
 
         sender.sendMessage("§e⏳ Actualizando §f" + info.getName() + "§e a la versión §f" + info.getVersion() + "§e...");
+        sender.sendMessage("§7Fuente: §d" + info.getSource().getDisplayName());
         sender.sendMessage("§7Esto puede tardar unos segundos...");
 
         // Actualización asincrónica (reinstalación)
-        downloader.installPluginAsync(pluginName).thenAccept(success -> {
+        downloader.installPluginAsync(info).thenAccept(success -> {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 if (success) {
                     handleSuccessfulUpdate(sender, info);

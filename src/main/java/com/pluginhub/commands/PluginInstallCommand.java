@@ -63,10 +63,11 @@ public final class PluginInstallCommand implements CommandExecutor, TabCompleter
         }
 
         sender.sendMessage("§e⏳ Instalando §f" + info.getName() + " v" + info.getVersion() + "§e...");
+        sender.sendMessage("§7Fuente: §d" + info.getSource().getDisplayName());
         sender.sendMessage("§7Esto puede tardar unos segundos...");
 
         // Instalación asincrónica
-        CompletableFuture<Boolean> future = downloader.installPluginAsync(pluginName);
+        CompletableFuture<Boolean> future = downloader.installPluginAsync(info);
         
         future.thenAccept(success -> {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -129,10 +130,10 @@ public final class PluginInstallCommand implements CommandExecutor, TabCompleter
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            // Sugerir plugins disponibles que no estén instalados
+            // Sugerir plugins en caché que no estén instalados
             List<String> installed = downloader.getInstalledPlugins();
             
-            return downloader.getAllAvailablePlugins().stream()
+            return downloader.getAllCachedPlugins().stream()
                     .map(PluginInfo::getName)
                     .filter(name -> !installed.contains(name))
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))

@@ -1,21 +1,31 @@
-# 🔌 PluginHub
+# 🔌 PluginHub v2.0
 
-**Gestor centralizado de plugins para servidores Paper/Spigot**
+**Gestor centralizado de plugins para servidores Paper/Spigot con integración multi-fuente**
 
-PluginHub es un plugin moderno y eficiente que permite buscar, instalar y actualizar plugins de Minecraft directamente desde el juego, sin necesidad de descargas manuales.
+PluginHub es un plugin avanzado y potente que permite buscar, instalar y actualizar plugins de Minecraft desde múltiples fuentes (SpigotMC, Modrinth, Hangar, BukkitDev) directamente desde el juego, sin necesidad de descargas manuales.
 
 ---
 
-## ✨ Características
+## ✨ Características Principales
 
-- 🔍 **Búsqueda inteligente** - Encuentra plugins por nombre o descripción
-- ⚡ **Instalación automática** - Descarga e instala plugins con un solo comando
+### 🌐 Integración Multi-Fuente
+- **SpigotMC** - Acceso a miles de plugins de Spigot vía API Spiget
+- **Modrinth** - Plugins modernos y optimizados
+- **Hangar** - Repositorio oficial de PaperMC
+- **BukkitDev** - Plugins clásicos de Bukkit
+
+### 🚀 Características Avanzadas
+- 🔍 **Búsqueda en tiempo real** - Busca en todas las fuentes simultáneamente
+- ⚡ **Instalación automática** - Descarga e instala con un solo comando
+- 📊 **Información detallada** - Descargas, ratings, autor, versiones soportadas
 - 🔄 **Sistema de actualizaciones** - Mantén tus plugins al día
 - 🎨 **Interfaz colorida** - Mensajes claros y visualmente atractivos
 - ⚙️ **Configuración flexible** - Personaliza timeouts, reintentos y más
-- 🔒 **Seguro y confiable** - Solo descarga de fuentes verificadas
+- 🔒 **Seguro y confiable** - Validación de fuentes y URLs
 - 📦 **Caché inteligente** - Mejora el rendimiento de búsquedas
 - 🌐 **Operaciones asíncronas** - No bloquea el servidor durante descargas
+- 🔄 **Reintentos automáticos** - Con backoff exponencial
+- 🎯 **Sin plugins prepuestos** - Busca cualquier plugin disponible
 
 ---
 
@@ -46,19 +56,29 @@ PluginHub es un plugin moderno y eficiente que permite buscar, instalar y actual
 - `version` - Información de la versión
 - `reload` - Recarga la configuración
 - `info` - Estadísticas del sistema
+- `clearcache` - Limpia el caché de búsqueda
 
 ### Buscar Plugins
 ```
 /phsearch <nombre>
 ```
-Busca plugins disponibles en el repositorio.
+Busca plugins en **todas las fuentes** simultáneamente (Spigot, Modrinth, Hangar, BukkitDev).
 
 **Ejemplos:**
 ```
 /phsearch essentials
 /phsearch world edit
 /phsearch permissions
+/phsearch coreprotect
 ```
+
+**Información mostrada:**
+- Nombre y versión
+- Autor y fuente
+- Descripción
+- Número de descargas
+- Rating (si disponible)
+- Enlace directo
 
 ### Instalar Plugins
 ```
@@ -128,20 +148,31 @@ trusted-sources:
 
 ---
 
-## 📦 Plugins Disponibles
+## 🌍 Fuentes de Plugins
 
-PluginHub incluye soporte para los plugins más populares:
+PluginHub busca automáticamente en múltiples repositorios:
 
-- **EssentialsX** - Comandos esenciales
-- **LuckPerms** - Sistema de permisos avanzado
-- **WorldEdit** - Edición de mundos
-- **Vault** - API de economía y permisos
-- **ProtocolLib** - Manipulación de paquetes
-- **PlotSquared** - Sistema de parcelas
-- **CoreProtect** - Logging y rollback
-- **Citizens** - NPCs avanzados
+### SpigotMC (Spiget API)
+- Miles de plugins disponibles
+- Información de descargas y ratings
+- Actualizaciones automáticas
 
-*Más plugins se añadirán en futuras versiones*
+### Modrinth
+- Plugins modernos y optimizados
+- Soporte para múltiples versiones
+- Categorización avanzada
+
+### Hangar (PaperMC)
+- Repositorio oficial de Paper
+- Plugins verificados
+- Optimizados para Paper
+
+### BukkitDev
+- Plugins clásicos de Bukkit
+- Gran variedad histórica
+- Compatibilidad legacy
+
+**¡Busca cualquier plugin disponible en estas fuentes!** No hay límites ni plugins prepuestos.
 
 ---
 
@@ -187,8 +218,14 @@ src/main/java/com/pluginhub/
     └── ColorLogger.java
 ```
 
-### Mejoras Implementadas
+### Mejoras Implementadas v2.0
 
+✅ **Integración Multi-API** - Spigot, Modrinth, Hangar, BukkitDev  
+✅ **Búsqueda paralela** - Busca en todas las fuentes simultáneamente  
+✅ **Sin plugins prepuestos** - Acceso a miles de plugins reales  
+✅ **HTTP Client moderno** - OkHttp para descargas eficientes  
+✅ **JSON parsing** - Gson para APIs REST  
+✅ **Web scraping** - Jsoup para BukkitDev  
 ✅ **Arquitectura limpia** - Separación de responsabilidades  
 ✅ **Manejo robusto de errores** - Try-catch y logging apropiado  
 ✅ **Operaciones asíncronas** - CompletableFuture para descargas  
@@ -199,21 +236,24 @@ src/main/java/com/pluginhub/
 ✅ **Documentación completa** - JavaDoc en todo el código  
 ✅ **Reintentos automáticos** - Con backoff exponencial  
 ✅ **Thread safety** - ConcurrentHashMap y sincronización  
+✅ **Builder pattern** - Para construcción de objetos complejos  
 
 ---
 
-## 🔮 Roadmap v2.0
+## 🔮 Roadmap v3.0
 
-- [ ] Integración con API de SpigotMC
-- [ ] Integración con API de Modrinth
 - [ ] Actualizaciones automáticas programadas
-- [ ] Sistema de dependencias
-- [ ] Verificación de checksums
-- [ ] Soporte para múltiples versiones
-- [ ] Base de datos SQLite para caché
+- [ ] Sistema de dependencias automático
+- [ ] Verificación de checksums SHA-256
+- [ ] Filtrado por versión de Minecraft
+- [ ] Base de datos SQLite para caché persistente
 - [ ] Interfaz web de administración
 - [ ] Notificaciones de actualizaciones
 - [ ] Backup automático antes de actualizar
+- [ ] Integración con GitHub Releases
+- [ ] Sistema de ratings y reviews
+- [ ] Categorías y filtros avanzados
+- [ ] Comparación de plugins similares
 
 ---
 

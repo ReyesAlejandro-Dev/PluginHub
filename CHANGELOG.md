@@ -7,9 +7,42 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [2.0.0] - 2024-12-06
+
+### 🎉 Lanzamiento Mayor - Integración Multi-Fuente
+
+#### ✨ Añadido
+- **Integración con SpigotMC** vía API Spiget
+- **Integración con Modrinth** vía API REST
+- **Integración con Hangar** (PaperMC) vía API REST
+- **Integración con BukkitDev** vía web scraping
+- Búsqueda paralela en todas las fuentes simultáneamente
+- Sistema de caché inteligente con timestamps
+- Información detallada de plugins (descargas, ratings, autor)
+- Builder pattern para PluginInfo
+- Enum PluginSource para identificar fuentes
+- Comando `/pluginhub clearcache`
+- HTTP client moderno con OkHttp
+- JSON parsing con Gson
+- Web scraping con Jsoup
+
+#### 🔧 Cambiado
+- PluginInfo ahora usa Builder pattern
+- PluginDownloader completamente reescrito
+- Búsqueda ahora es asíncrona en múltiples fuentes
+- Comandos actualizados para mostrar fuente del plugin
+- Eliminados plugins prepuestos (ahora busca en APIs reales)
+
+#### 📦 Dependencias Añadidas
+- OkHttp 4.12.0 - Cliente HTTP
+- Gson 2.10.1 - JSON parsing
+- Jsoup 1.17.2 - HTML parsing
+
+---
+
 ## [1.0.0] - 2024-12-06
 
-### 🎉 Lanzamiento Inicial
+### 🎉 Lanzamiento Inicial (Deprecado)
 
 #### ✨ Añadido
 - Sistema completo de búsqueda de plugins

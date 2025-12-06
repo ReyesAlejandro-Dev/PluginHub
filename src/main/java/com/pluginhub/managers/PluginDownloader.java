@@ -1,7 +1,11 @@
 package com.pluginhub.managers;
 
+import com.pluginhub.api.*;
 import com.pluginhub.models.PluginInfo;
 import com.pluginhub.utils.ConfigManager;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -13,155 +17,194 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
- * Gestor de descarga e instalación de plugins
+ * Gestor avanzado de descarga e instalación de plugins
+ * Integra múltiples fuentes: Spigot, Modrinth, Hangar, Bukkit
  */
 public final class PluginDownloader {
 
     private final JavaPlugin plugin;
     private final ConfigManager configManager;
-    private final Map<String, PluginInfo> pluginCache;
     private final ExecutorService executorService;
-    private final Map<String, Long> downloadCache;
+    private final Map<String, PluginInfo> searchCache;
+    private final Map<String, Long> cacheTimestamps;
+    
+    // APIs de diferentes fuentes
+    private final SpigotAPI spigotAPI;
+    private final ModrinthAPI modrinthAPI;
+    private final HangarAPI hangarAPI;
+    private final BukkitAPI bukkitAPI;
+    private final OkHttpClient httpClient;
 
     private static final int BUFFER_SIZE = 8192;
-    private static final String USER_AGENT = "PluginHub/1.0";
+    private static final String USER_AGENT = "PluginHub/2.0";
+    private static final int SEARCH_LIMIT = 10;
 
     public PluginDownloader(JavaPlugin plugin, ConfigManager configManager) {
         this.plugin = plugin;
         this.configManager = configManager;
-        this.pluginCache = new ConcurrentHashMap<>();
-        this.executorService = Executors.newFixedThreadPool(3);
-        this.downloadCache = new ConcurrentHashMap<>();
+        this.executorService = Executors.newFixedThreadPool(5);
+        this.searchCache = new ConcurrentHashMap<>();
+        this.cacheTimestamps = new ConcurrentHashMap<>();
         
-        initializePluginDatabase();
+        // Inicializar APIs
+        this.spigotAPI = new SpigotAPI(plugin.getLogger());
+        this.modrinthAPI = new ModrinthAPI(plugin.getLogger());
+        this.hangarAPI = new HangarAPI(plugin.getLogger());
+        this.bukkitAPI = new BukkitAPI(plugin.getLogger());
+        
+        this.httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .followRedirects(true)
+                .build();
+        
+        plugin.getLogger().info("PluginDownloader inicializado con múltiples fuentes");
     }
 
     /**
-     * Inicializa la base de datos de plugins disponibles
+     * Busca plugins en todas las fuentes disponibles
      */
-    private void initializePluginDatabase() {
-        // Plugins populares de SpigotMC
-        addPlugin("essentialsx", new PluginInfo(
-                "EssentialsX",
-                "2.20.1",
-                "https://ci.ender.zone/job/EssentialsX/lastSuccessfulBuild/artifact/Essentials/target/EssentialsX-2.20.1.jar",
-                "https://www.spigotmc.org/resources/essentialsx.9089/",
-                "Essential commands and utilities for Minecraft servers"
-        ));
-
-        addPlugin("luckperms", new PluginInfo(
-                "LuckPerms",
-                "5.4.121",
-                "https://download.luckperms.net/1556/bukkit/loader/LuckPerms-Bukkit-5.4.121.jar",
-                "https://www.spigotmc.org/resources/luckperms.28140/",
-                "Advanced permissions management system"
-        ));
-
-        addPlugin("worldedit", new PluginInfo(
-                "WorldEdit",
-                "7.2.15",
-                "https://dev.bukkit.org/projects/worldedit/files/latest",
-                "https://dev.bukkit.org/projects/worldedit",
-                "In-game world editing and building tool"
-        ));
-
-        addPlugin("vault", new PluginInfo(
-                "Vault",
-                "1.7.3",
-                "https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar",
-                "https://www.spigotmc.org/resources/vault.34315/",
-                "Permission, chat and economy API abstraction layer"
-        ));
-
-        addPlugin("protocollib", new PluginInfo(
-                "ProtocolLib",
-                "5.1.0",
-                "https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/build/libs/ProtocolLib.jar",
-                "https://www.spigotmc.org/resources/protocollib.1997/",
-                "Protocol packet manipulation library"
-        ));
-
-        addPlugin("plotsquared", new PluginInfo(
-                "PlotSquared",
-                "7.3.8",
-                "https://github.com/IntellectualSites/PlotSquared/releases/latest",
-                "https://www.spigotmc.org/resources/plotsquared-v6.77506/",
-                "Advanced plot world management system"
-        ));
-
-        addPlugin("coreprotect", new PluginInfo(
-                "CoreProtect",
-                "22.2",
-                "https://www.spigotmc.org/resources/coreprotect.8631/download",
-                "https://www.spigotmc.org/resources/coreprotect.8631/",
-                "Fast and efficient block logging and rollback tool"
-        ));
-
-        addPlugin("citizens", new PluginInfo(
-                "Citizens",
-                "2.0.33",
-                "https://ci.citizensnpcs.co/job/Citizens2/lastSuccessfulBuild/artifact/dist/target/Citizens-2.0.33-b3290.jar",
-                "https://www.spigotmc.org/resources/citizens.13811/",
-                "Advanced NPC creation and management"
-        ));
-    }
-
-    /**
-     * Añade un plugin al caché
-     */
-    private void addPlugin(String key, PluginInfo info) {
-        pluginCache.put(key.toLowerCase(), info);
-    }
-
-    /**
-     * Busca plugins por nombre o descripción
-     */
-    public List<PluginInfo> searchPlugins(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return Collections.emptyList();
+    public CompletableFuture<List<PluginInfo>> searchPluginsAsync(String query) {
+        // Verificar caché
+        if (configManager.isCacheEnabled()) {
+            String cacheKey = query.toLowerCase();
+            if (searchCache.containsKey(cacheKey)) {
+                Long timestamp = cacheTimestamps.get(cacheKey);
+                long cacheAge = System.currentTimeMillis() - timestamp;
+                long maxAge = configManager.getCacheDuration() * 60 * 1000L;
+                
+                if (cacheAge < maxAge) {
+                    plugin.getLogger().info("Usando resultados en caché para: " + query);
+                    return CompletableFuture.completedFuture(
+                        searchCache.values().stream()
+                            .filter(p -> matchesQuery(p, query))
+                            .collect(Collectors.toList())
+                    );
+                }
+            }
         }
 
-        String lowerQuery = query.toLowerCase().trim();
+        return CompletableFuture.supplyAsync(() -> {
+            List<PluginInfo> allResults = new ArrayList<>();
+            List<CompletableFuture<List<PluginInfo>>> futures = new ArrayList<>();
 
-        return pluginCache.entrySet().stream()
-                .filter(entry -> matchesQuery(entry, lowerQuery))
-                .map(Map.Entry::getValue)
-                .limit(10)
-                .collect(Collectors.toList());
+            // Buscar en Spigot
+            futures.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    plugin.getLogger().info("Buscando en SpigotMC...");
+                    return spigotAPI.searchPlugins(query, SEARCH_LIMIT);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Error buscando en Spigot: " + e.getMessage());
+                    return Collections.emptyList();
+                }
+            }, executorService));
+
+            // Buscar en Modrinth
+            futures.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    plugin.getLogger().info("Buscando en Modrinth...");
+                    return modrinthAPI.searchPlugins(query, SEARCH_LIMIT);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Error buscando en Modrinth: " + e.getMessage());
+                    return Collections.emptyList();
+                }
+            }, executorService));
+
+            // Buscar en Hangar
+            futures.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    plugin.getLogger().info("Buscando en Hangar...");
+                    return hangarAPI.searchPlugins(query, SEARCH_LIMIT);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Error buscando en Hangar: " + e.getMessage());
+                    return Collections.emptyList();
+                }
+            }, executorService));
+
+            // Buscar en BukkitDev
+            futures.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    plugin.getLogger().info("Buscando en BukkitDev...");
+                    return bukkitAPI.searchPlugins(query, SEARCH_LIMIT);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Error buscando en BukkitDev: " + e.getMessage());
+                    return Collections.emptyList();
+                }
+            }, executorService));
+
+            // Esperar a que todas las búsquedas terminen
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            // Combinar resultados
+            for (CompletableFuture<List<PluginInfo>> future : futures) {
+                try {
+                    allResults.addAll(future.get());
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Error obteniendo resultados: " + e.getMessage());
+                }
+            }
+
+            // Eliminar duplicados (mismo nombre)
+            Map<String, PluginInfo> uniqueResults = new LinkedHashMap<>();
+            for (PluginInfo info : allResults) {
+                String key = info.getName().toLowerCase();
+                if (!uniqueResults.containsKey(key)) {
+                    uniqueResults.put(key, info);
+                }
+            }
+
+            List<PluginInfo> finalResults = new ArrayList<>(uniqueResults.values());
+
+            // Ordenar por descargas (más popular primero)
+            finalResults.sort((a, b) -> Integer.compare(b.getDownloads(), a.getDownloads()));
+
+            // Guardar en caché
+            if (configManager.isCacheEnabled()) {
+                String cacheKey = query.toLowerCase();
+                for (PluginInfo info : finalResults) {
+                    searchCache.put(info.getName().toLowerCase(), info);
+                }
+                cacheTimestamps.put(cacheKey, System.currentTimeMillis());
+            }
+
+            plugin.getLogger().info("Búsqueda completada: " + finalResults.size() + " resultados únicos");
+            return finalResults;
+
+        }, executorService);
     }
 
     /**
      * Verifica si un plugin coincide con la búsqueda
      */
-    private boolean matchesQuery(Map.Entry<String, PluginInfo> entry, String query) {
-        PluginInfo info = entry.getValue();
-        return entry.getKey().contains(query) ||
-               info.getName().toLowerCase().contains(query) ||
-               info.getDescription().toLowerCase().contains(query);
+    private boolean matchesQuery(PluginInfo info, String query) {
+        String lowerQuery = query.toLowerCase();
+        return info.getName().toLowerCase().contains(lowerQuery) ||
+               info.getDescription().toLowerCase().contains(lowerQuery) ||
+               info.getAuthor().toLowerCase().contains(lowerQuery);
     }
 
     /**
-     * Obtiene información de un plugin específico
+     * Obtiene información de un plugin por nombre (busca en caché primero)
      */
     public PluginInfo getPluginInfo(String pluginName) {
         if (pluginName == null || pluginName.trim().isEmpty()) {
             return null;
         }
-        return pluginCache.get(pluginName.toLowerCase().trim());
+        return searchCache.get(pluginName.toLowerCase().trim());
     }
 
     /**
      * Descarga un plugin desde su URL
      */
-    public CompletableFuture<Boolean> downloadPluginAsync(String pluginName, File destination) {
+    public CompletableFuture<Boolean> downloadPluginAsync(PluginInfo pluginInfo, File destination) {
         return CompletableFuture.supplyAsync(() -> {
-            PluginInfo info = getPluginInfo(pluginName);
-            if (info == null) {
-                plugin.getLogger().warning("Plugin no encontrado: " + pluginName);
+            if (pluginInfo == null || pluginInfo.getDownloadUrl() == null) {
+                plugin.getLogger().warning("URL de descarga no disponible");
                 return false;
             }
 
-            return downloadWithRetry(info, destination);
+            return downloadWithRetry(pluginInfo, destination);
         }, executorService);
     }
 
@@ -174,8 +217,8 @@ public final class PluginDownloader {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                plugin.getLogger().info(String.format("⏳ Descargando %s v%s (intento %d/%d)...", 
-                        info.getName(), info.getVersion(), attempt, maxRetries));
+                plugin.getLogger().info(String.format("⏳ Descargando %s v%s desde %s (intento %d/%d)...", 
+                        info.getName(), info.getVersion(), info.getSource().getDisplayName(), attempt, maxRetries));
 
                 if (performDownload(info.getDownloadUrl(), destination, timeout)) {
                     plugin.getLogger().info("✓ " + info.getName() + " descargado correctamente");
@@ -201,22 +244,17 @@ public final class PluginDownloader {
     }
 
     /**
-     * Realiza la descarga del archivo
+     * Realiza la descarga del archivo usando OkHttp
      */
     private boolean performDownload(String urlString, File destination, int timeout) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        
-        try {
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(timeout);
-            connection.setReadTimeout(timeout);
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setInstanceFollowRedirects(true);
+        Request request = new Request.Builder()
+                .url(urlString)
+                .header("User-Agent", USER_AGENT)
+                .build();
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new IOException("HTTP error code: " + responseCode);
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("HTTP error code: " + response.code());
             }
 
             // Crear directorio padre si no existe
@@ -226,7 +264,7 @@ public final class PluginDownloader {
             }
 
             // Descargar archivo
-            try (InputStream in = new BufferedInputStream(connection.getInputStream());
+            try (InputStream in = new BufferedInputStream(response.body().byteStream());
                  FileOutputStream out = new FileOutputStream(destination)) {
                 
                 byte[] buffer = new byte[BUFFER_SIZE];
@@ -241,36 +279,40 @@ public final class PluginDownloader {
                 plugin.getLogger().info(String.format("Descargados %.2f MB", totalBytes / 1024.0 / 1024.0));
                 return true;
             }
-        } finally {
-            connection.disconnect();
         }
     }
 
     /**
      * Instala un plugin en la carpeta de plugins del servidor
      */
-    public CompletableFuture<Boolean> installPluginAsync(String pluginName) {
+    public CompletableFuture<Boolean> installPluginAsync(PluginInfo pluginInfo) {
         return CompletableFuture.supplyAsync(() -> {
-            PluginInfo info = getPluginInfo(pluginName);
-            if (info == null) {
+            if (pluginInfo == null) {
                 return false;
             }
 
             File pluginsFolder = plugin.getServer().getPluginsFolder();
-            File destination = new File(pluginsFolder, info.getName() + ".jar");
+            String fileName = sanitizeFileName(pluginInfo.getName()) + ".jar";
+            File destination = new File(pluginsFolder, fileName);
 
             try {
-                if (performDownload(info.getDownloadUrl(), destination, configManager.getDownloadTimeout())) {
-                    plugin.getLogger().info("✓ " + info.getName() + " instalado correctamente");
-                    downloadCache.put(pluginName.toLowerCase(), System.currentTimeMillis());
+                if (performDownload(pluginInfo.getDownloadUrl(), destination, configManager.getDownloadTimeout())) {
+                    plugin.getLogger().info("✓ " + pluginInfo.getName() + " instalado correctamente");
                     return true;
                 }
             } catch (IOException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error instalando " + pluginName, e);
+                plugin.getLogger().log(Level.SEVERE, "Error instalando " + pluginInfo.getName(), e);
             }
 
             return false;
         }, executorService);
+    }
+
+    /**
+     * Sanitiza el nombre del archivo
+     */
+    private String sanitizeFileName(String name) {
+        return name.replaceAll("[^a-zA-Z0-9.-]", "_");
     }
 
     /**
@@ -297,16 +339,49 @@ public final class PluginDownloader {
     }
 
     /**
-     * Obtiene todos los plugins disponibles
+     * Obtiene todos los plugins del caché
      */
-    public Collection<PluginInfo> getAllAvailablePlugins() {
-        return Collections.unmodifiableCollection(pluginCache.values());
+    public Collection<PluginInfo> getAllCachedPlugins() {
+        return Collections.unmodifiableCollection(searchCache.values());
+    }
+
+    /**
+     * Limpia el caché de búsqueda
+     */
+    public void clearCache() {
+        searchCache.clear();
+        cacheTimestamps.clear();
+        plugin.getLogger().info("Caché de búsqueda limpiado");
+    }
+
+    /**
+     * Obtiene estadísticas del caché
+     */
+    public Map<String, Object> getCacheStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("cached_plugins", searchCache.size());
+        stats.put("cache_enabled", configManager.isCacheEnabled());
+        stats.put("cache_duration_minutes", configManager.getCacheDuration());
+        return stats;
     }
 
     /**
      * Limpia recursos al desactivar el plugin
      */
     public void shutdown() {
+        plugin.getLogger().info("Cerrando PluginDownloader...");
+        
+        // Cerrar APIs
+        spigotAPI.shutdown();
+        modrinthAPI.shutdown();
+        hangarAPI.shutdown();
+        bukkitAPI.shutdown();
+        
+        // Cerrar HTTP client
+        httpClient.dispatcher().executorService().shutdown();
+        httpClient.connectionPool().evictAll();
+        
+        // Cerrar executor service
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -316,5 +391,7 @@ public final class PluginDownloader {
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
+        
+        plugin.getLogger().info("PluginDownloader cerrado correctamente");
     }
 }

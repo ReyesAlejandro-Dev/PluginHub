@@ -30,6 +30,7 @@ public final class PluginSearchCommand implements CommandExecutor, TabCompleter 
         if (args.length == 0) {
             sender.sendMessage("§c✗ Uso: §e/phsearch <nombre del plugin>");
             sender.sendMessage("§7Ejemplo: §f/phsearch essentials");
+            sender.sendMessage("§7Fuentes: §bSpigot, Modrinth, Hangar, BukkitDev");
             return true;
         }
 
@@ -40,16 +41,20 @@ public final class PluginSearchCommand implements CommandExecutor, TabCompleter 
             return true;
         }
 
-        sender.sendMessage("§e⏳ Buscando plugins que coincidan con: §f" + query);
+        sender.sendMessage("§e⏳ Buscando §f'" + query + "'§e en múltiples fuentes...");
+        sender.sendMessage("§7Esto puede tardar unos segundos...");
 
-        // Búsqueda asincrónica para no bloquear el servidor
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<PluginInfo> results = downloader.searchPlugins(query);
-
+        // Búsqueda asincrónica en todas las fuentes
+        downloader.searchPluginsAsync(query).thenAccept(results -> {
             // Volver al thread principal para enviar mensajes
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 displayResults(sender, results, query);
             });
+        }).exceptionally(throwable -> {
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                sender.sendMessage("§c✗ Error durante la búsqueda: " + throwable.getMessage());
+            });
+            return null;
         });
 
         return true;
@@ -83,15 +88,30 @@ public final class PluginSearchCommand implements CommandExecutor, TabCompleter 
         sender.sendMessage("");
         sender.sendMessage("§e● " + info.getName() + " §7(v" + info.getVersion() + ")");
         sender.sendMessage("  §f" + info.getDescription());
+        sender.sendMessage("  §7Autor: §b" + info.getAuthor() + " §7| Fuente: §d" + info.getSource().getDisplayName());
+        sender.sendMessage("  §7Descargas: §a" + formatNumber(info.getDownloads()) + 
+                          (info.getRating() > 0 ? " §7| Rating: §e" + String.format("%.1f", info.getRating()) + "★" : ""));
         sender.sendMessage("  §9→ /phinstall " + info.getName().toLowerCase().replaceAll("\\s+", ""));
         sender.sendMessage("  §8" + info.getSourceUrl());
+    }
+
+    /**
+     * Formatea números grandes
+     */
+    private String formatNumber(int number) {
+        if (number >= 1000000) {
+            return String.format("%.1fM", number / 1000000.0);
+        } else if (number >= 1000) {
+            return String.format("%.1fK", number / 1000.0);
+        }
+        return String.valueOf(number);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            // Sugerir nombres de plugins populares
-            return downloader.getAllAvailablePlugins().stream()
+            // Sugerir nombres de plugins en caché
+            return downloader.getAllCachedPlugins().stream()
                     .map(PluginInfo::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
                     .limit(10)
