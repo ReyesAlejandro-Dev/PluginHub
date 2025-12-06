@@ -1,8 +1,8 @@
-# 🔌 PluginHub v2.0
+# 🔌 PluginHub v1.0
 
 **Gestor centralizado de plugins para servidores Paper/Spigot con integración multi-fuente**
 
-PluginHub es un plugin avanzado y potente que permite buscar, instalar y actualizar plugins de Minecraft desde múltiples fuentes (SpigotMC, Modrinth, Hangar, BukkitDev) directamente desde el juego, sin necesidad de descargas manuales.
+PluginHub es un plugin avanzado y altamente configurable que permite buscar, instalar y actualizar plugins de Minecraft desde múltiples fuentes (SpigotMC, Modrinth, Hangar, BukkitDev) directamente desde el juego, sin necesidad de descargas manuales.
 
 ---
 
@@ -144,6 +144,33 @@ trusted-sources:
   - "https://www.spigotmc.org"
   - "https://dev.bukkit.org"
   - "https://github.com"
+```
+
+---
+
+## ⚙️ Configuración Altamente Personalizable
+
+PluginHub incluye **más de 100 opciones configurables** en `plugins/PluginHub/config.yml`
+
+### 🎛️ Principales Categorías
+
+**General** - Idioma, banner, debug, actualizaciones  
+**Búsqueda** - Resultados máximos, timeout, fuentes habilitadas  
+**Descargas** - Timeout, reintentos, progreso, tamaño máximo  
+**Caché** - Duración, tamaño, persistencia  
+**Seguridad** - Fuentes confiables, SSL, HTTPS  
+**Rendimiento** - Threads, búsquedas simultáneas, cooldown  
+**Mensajes** - Personaliza todos los mensajes del plugin  
+**Notificaciones** - Discord webhooks, alertas  
+**Comandos** - Habilitar/deshabilitar, cooldowns  
+**Avanzado** - Proxy, User-Agent, HTTP config  
+**Experimental** - Características en desarrollo
+
+Ver el archivo `config.yml` completo con todas las opciones y comentarios detallados.
+
+**Recargar configuración:**
+```bash
+/pluginhub reload
 ```
 
 ---

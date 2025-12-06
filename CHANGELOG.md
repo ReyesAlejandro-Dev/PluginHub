@@ -7,9 +7,9 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [2.0.0] - 2024-12-06
+## [1.0.0] - 2024-12-06
 
-### 🎉 Lanzamiento Mayor - Integración Multi-Fuente
+### 🎉 Lanzamiento Inicial - Integración Multi-Fuente y Altamente Configurable
 
 #### ✨ Añadido
 - **Integración con SpigotMC** vía API Spiget
@@ -40,9 +40,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [1.0.0] - 2024-12-06
-
-### 🎉 Lanzamiento Inicial (Deprecado)
+## Características Principales v1.0
 
 #### ✨ Añadido
 - Sistema completo de búsqueda de plugins

@@ -42,24 +42,36 @@ public final class PluginDownloader {
     public PluginDownloader(JavaPlugin plugin, ConfigManager configManager) {
         this.plugin = plugin;
         this.configManager = configManager;
-        this.executorService = Executors.newFixedThreadPool(5);
+        
+        // Usar configuración para thread pool
+        int threadPoolSize = configManager.getThreadPoolSize();
+        this.executorService = Executors.newFixedThreadPool(threadPoolSize);
         this.searchCache = new ConcurrentHashMap<>();
         this.cacheTimestamps = new ConcurrentHashMap<>();
         
-        // Inicializar APIs
-        this.spigotAPI = new SpigotAPI(plugin.getLogger());
-        this.modrinthAPI = new ModrinthAPI(plugin.getLogger());
-        this.hangarAPI = new HangarAPI(plugin.getLogger());
-        this.bukkitAPI = new BukkitAPI(plugin.getLogger());
+        // Inicializar APIs según configuración
+        this.spigotAPI = configManager.isSpigotEnabled() ? new SpigotAPI(plugin.getLogger()) : null;
+        this.modrinthAPI = configManager.isModrinthEnabled() ? new ModrinthAPI(plugin.getLogger()) : null;
+        this.hangarAPI = configManager.isHangarEnabled() ? new HangarAPI(plugin.getLogger()) : null;
+        this.bukkitAPI = configManager.isBukkitEnabled() ? new BukkitAPI(plugin.getLogger()) : null;
         
+        // Configurar HTTP client con opciones personalizadas
+        int timeout = configManager.getHttpTimeout();
         this.httpClient = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .followRedirects(true)
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout, TimeUnit.MILLISECONDS)
+                .followRedirects(configManager.followRedirects())
                 .build();
         
         plugin.getLogger().info("PluginDownloader inicializado con múltiples fuentes");
+        if (configManager.isDebugEnabled()) {
+            plugin.getLogger().info("Debug: Thread pool size = " + threadPoolSize);
+            plugin.getLogger().info("Debug: Spigot = " + configManager.isSpigotEnabled());
+            plugin.getLogger().info("Debug: Modrinth = " + configManager.isModrinthEnabled());
+            plugin.getLogger().info("Debug: Hangar = " + configManager.isHangarEnabled());
+            plugin.getLogger().info("Debug: Bukkit = " + configManager.isBukkitEnabled());
+        }
     }
 
     /**
@@ -89,50 +101,60 @@ public final class PluginDownloader {
             List<PluginInfo> allResults = new ArrayList<>();
             List<CompletableFuture<List<PluginInfo>>> futures = new ArrayList<>();
 
-            // Buscar en Spigot
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                try {
-                    plugin.getLogger().info("Buscando en SpigotMC...");
-                    return spigotAPI.searchPlugins(query, SEARCH_LIMIT);
-                } catch (IOException e) {
-                    plugin.getLogger().warning("Error buscando en Spigot: " + e.getMessage());
-                    return Collections.emptyList();
-                }
-            }, executorService));
+            int searchLimit = configManager.getMaxSearchResults();
+            
+            // Buscar en Spigot (si está habilitado)
+            if (spigotAPI != null) {
+                futures.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        plugin.getLogger().info("Buscando en SpigotMC...");
+                        return spigotAPI.searchPlugins(query, searchLimit);
+                    } catch (IOException e) {
+                        plugin.getLogger().warning("Error buscando en Spigot: " + e.getMessage());
+                        return Collections.emptyList();
+                    }
+                }, executorService));
+            }
 
-            // Buscar en Modrinth
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                try {
-                    plugin.getLogger().info("Buscando en Modrinth...");
-                    return modrinthAPI.searchPlugins(query, SEARCH_LIMIT);
-                } catch (IOException e) {
-                    plugin.getLogger().warning("Error buscando en Modrinth: " + e.getMessage());
-                    return Collections.emptyList();
-                }
-            }, executorService));
+            // Buscar en Modrinth (si está habilitado)
+            if (modrinthAPI != null) {
+                futures.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        plugin.getLogger().info("Buscando en Modrinth...");
+                        return modrinthAPI.searchPlugins(query, searchLimit);
+                    } catch (IOException e) {
+                        plugin.getLogger().warning("Error buscando en Modrinth: " + e.getMessage());
+                        return Collections.emptyList();
+                    }
+                }, executorService));
+            }
 
-            // Buscar en Hangar
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                try {
-                    plugin.getLogger().info("Buscando en Hangar...");
-                    return hangarAPI.searchPlugins(query, SEARCH_LIMIT);
-                } catch (IOException e) {
-                    plugin.getLogger().warning("Error buscando en Hangar: " + e.getMessage());
-                    return Collections.emptyList();
-                }
-            }, executorService));
+            // Buscar en Hangar (si está habilitado)
+            if (hangarAPI != null) {
+                futures.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        plugin.getLogger().info("Buscando en Hangar...");
+                        return hangarAPI.searchPlugins(query, searchLimit);
+                    } catch (IOException e) {
+                        plugin.getLogger().warning("Error buscando en Hangar: " + e.getMessage());
+                        return Collections.emptyList();
+                    }
+                }, executorService));
+            }
 
-            // Buscar en BukkitDev (puede estar bloqueado)
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                try {
-                    plugin.getLogger().info("Buscando en BukkitDev...");
-                    return bukkitAPI.searchPlugins(query, SEARCH_LIMIT);
-                } catch (IOException e) {
-                    // BukkitDev frecuentemente bloquea requests, no mostrar warning
-                    plugin.getLogger().fine("BukkitDev no disponible: " + e.getMessage());
-                    return Collections.emptyList();
-                }
-            }, executorService));
+            // Buscar en BukkitDev (si está habilitado)
+            if (bukkitAPI != null) {
+                futures.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        plugin.getLogger().info("Buscando en BukkitDev...");
+                        return bukkitAPI.searchPlugins(query, searchLimit);
+                    } catch (IOException e) {
+                        // BukkitDev frecuentemente bloquea requests, no mostrar warning
+                        plugin.getLogger().fine("BukkitDev no disponible: " + e.getMessage());
+                        return Collections.emptyList();
+                    }
+                }, executorService));
+            }
 
             // Esperar a que todas las búsquedas terminen
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -372,11 +394,11 @@ public final class PluginDownloader {
     public void shutdown() {
         plugin.getLogger().info("Cerrando PluginDownloader...");
         
-        // Cerrar APIs
-        spigotAPI.shutdown();
-        modrinthAPI.shutdown();
-        hangarAPI.shutdown();
-        bukkitAPI.shutdown();
+        // Cerrar APIs (solo si están inicializadas)
+        if (spigotAPI != null) spigotAPI.shutdown();
+        if (modrinthAPI != null) modrinthAPI.shutdown();
+        if (hangarAPI != null) hangarAPI.shutdown();
+        if (bukkitAPI != null) bukkitAPI.shutdown();
         
         // Cerrar HTTP client
         httpClient.dispatcher().executorService().shutdown();

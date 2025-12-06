@@ -1,44 +1,350 @@
 # ═══════════════════════════════════════════════════════
-#  PluginHub - Configuración
+#  PluginHub v1.0 - Configuración Completa
 # ═══════════════════════════════════════════════════════
 
-# Configuración de descargas
+# ═══════════════════════════════════════════════════════
+#  CONFIGURACIÓN GENERAL
+# ═══════════════════════════════════════════════════════
+
+general:
+  # Idioma del plugin (en, es, fr, de, pt)
+  language: "es"
+  
+  # Prefijo de mensajes
+  prefix: "&6[&ePluginHub&6]&r"
+  
+  # Mostrar banner al iniciar
+  show-banner: true
+  
+  # Modo debug (muestra información adicional en consola)
+  debug: false
+  
+  # Verificar actualizaciones del plugin al iniciar
+  check-updates: true
+
+# ═══════════════════════════════════════════════════════
+#  CONFIGURACIÓN DE BÚSQUEDA
+# ═══════════════════════════════════════════════════════
+
+search:
+  # Número máximo de resultados por búsqueda
+  max-results: 10
+  
+  # Tiempo máximo de espera para búsqueda (segundos)
+  timeout: 10
+  
+  # Mostrar información detallada en resultados
+  show-detailed-info: true
+  
+  # Ordenar resultados por popularidad
+  sort-by-downloads: true
+  
+  # Fuentes habilitadas para búsqueda
+  sources:
+    spigot: true
+    modrinth: true
+    hangar: true
+    bukkit: true
+
+# ═══════════════════════════════════════════════════════
+#  CONFIGURACIÓN DE DESCARGAS
+# ═══════════════════════════════════════════════════════
+
 download:
-  # Tiempo máximo de espera para descargas (en milisegundos)
+  # Tiempo máximo de espera para descargas (milisegundos)
   timeout: 30000
   
   # Número de reintentos en caso de fallo
   retries: 3
+  
+  # Tiempo de espera entre reintentos (milisegundos)
+  retry-delay: 2000
+  
+  # Usar backoff exponencial (aumenta el delay en cada reintento)
+  exponential-backoff: true
+  
+  # Mostrar progreso de descarga
+  show-progress: true
+  
+  # Verificar integridad del archivo descargado
+  verify-integrity: false
+  
+  # Tamaño máximo de descarga (MB) - 0 = sin límite
+  max-file-size: 50
 
-# Actualizaciones automáticas
+# ═══════════════════════════════════════════════════════
+#  CONFIGURACIÓN DE CACHÉ
+# ═══════════════════════════════════════════════════════
+
+cache:
+  # Habilitar sistema de caché
+  enabled: true
+  
+  # Duración del caché en minutos
+  duration-minutes: 60
+  
+  # Limpiar caché automáticamente al reiniciar
+  clear-on-restart: false
+  
+  # Tamaño máximo del caché (número de plugins)
+  max-size: 1000
+  
+  # Guardar caché en disco (persistente)
+  persistent: false
+
+# ═══════════════════════════════════════════════════════
+#  ACTUALIZACIONES AUTOMÁTICAS
+# ═══════════════════════════════════════════════════════
+
 auto-update:
   # Habilitar actualizaciones automáticas (v2.0)
   enabled: false
   
   # Intervalo de verificación en horas
   check-interval: 24
+  
+  # Actualizar solo plugins específicos
+  whitelist-enabled: false
+  whitelist:
+    - "essentialsx"
+    - "luckperms"
+  
+  # No actualizar plugins específicos
+  blacklist-enabled: false
+  blacklist:
+    - "worldedit"
+  
+  # Crear backup antes de actualizar
+  backup-before-update: true
+  
+  # Notificar a admins cuando hay actualizaciones
+  notify-admins: true
 
-# Sistema de caché
-cache:
-  # Habilitar caché de búsquedas
+# ═══════════════════════════════════════════════════════
+#  SEGURIDAD
+# ═══════════════════════════════════════════════════════
+
+security:
+  # Fuentes confiables (URLs permitidas)
+  trusted-sources:
+    - "https://www.spigotmc.org"
+    - "https://api.spiget.org"
+    - "https://api.modrinth.com"
+    - "https://hangar.papermc.io"
+    - "https://dev.bukkit.org"
+    - "https://github.com"
+    - "https://ci.dmulloy2.net"
+    - "https://ci.ender.zone"
+    - "https://download.luckperms.net"
+  
+  # Verificar certificados SSL
+  verify-ssl: true
+  
+  # Permitir solo descargas HTTPS
+  https-only: true
+  
+  # Bloquear plugins premium (que requieren compra)
+  block-premium: false
+  
+  # Requerir confirmación para instalar plugins
+  require-confirmation: false
+
+# ═══════════════════════════════════════════════════════
+#  RENDIMIENTO
+# ═══════════════════════════════════════════════════════
+
+performance:
+  # Número de threads para operaciones asíncronas
+  thread-pool-size: 5
+  
+  # Usar compresión para caché
+  compress-cache: false
+  
+  # Limitar búsquedas simultáneas por jugador
+  max-concurrent-searches: 2
+  
+  # Cooldown entre búsquedas (segundos)
+  search-cooldown: 3
+
+# ═══════════════════════════════════════════════════════
+#  MENSAJES PERSONALIZADOS
+# ═══════════════════════════════════════════════════════
+
+messages:
+  # Mensajes de búsqueda
+  search-start: "&e⏳ Buscando '&f{query}&e' en múltiples fuentes..."
+  search-wait: "&7Esto puede tardar unos segundos..."
+  search-complete: "&a✓ Se encontraron &f{count}&a resultado(s):"
+  search-no-results: "&c✗ No se encontraron plugins para: &f{query}"
+  
+  # Mensajes de instalación
+  install-start: "&e⏳ Instalando &f{plugin} v{version}&e..."
+  install-source: "&7Fuente: &d{source}"
+  install-wait: "&7Esto puede tardar unos segundos..."
+  install-success: "&a✓ &f{plugin} v{version}&a instalado correctamente"
+  install-error: "&c✗ Error durante la instalación de &f{plugin}"
+  
+  # Mensajes de actualización
+  update-checking: "&e⏳ Verificando actualizaciones..."
+  update-available: "&a✓ Actualización disponible para &f{plugin}"
+  update-success: "&a✓ &f{plugin}&a actualizado a la versión &f{version}"
+  
+  # Mensajes de error
+  error-permission: "&c✗ No tienes permiso para usar este comando"
+  error-no-internet: "&c✗ Error de conexión. Verifica tu internet"
+  error-timeout: "&c✗ Tiempo de espera agotado"
+  error-invalid-plugin: "&c✗ Plugin no encontrado: &f{plugin}"
+  
+  # Mensajes de ayuda
+  help-header: "&6╔══════════════════════════════╗\n&6║      &e&lPluginHub &6- &fAyuda             &6║\n&6╚═══════════════════════════════╝"
+  help-footer: "&7Permisos: &fpluginhub.admin"
+
+# ═══════════════════════════════════════════════════════
+#  NOTIFICACIONES
+# ═══════════════════════════════════════════════════════
+
+notifications:
+  # Notificar a admins al iniciar
+  notify-on-start: true
+  
+  # Notificar cuando se instala un plugin
+  notify-on-install: true
+  
+  # Notificar cuando hay errores
+  notify-on-error: true
+  
+  # Enviar notificaciones a Discord (webhook)
+  discord:
+    enabled: false
+    webhook-url: ""
+    notify-install: true
+    notify-update: true
+    notify-error: true
+
+# ═══════════════════════════════════════════════════════
+#  ESTADÍSTICAS
+# ═══════════════════════════════════════════════════════
+
+statistics:
+  # Recopilar estadísticas de uso
   enabled: true
   
-  # Duración del caché en minutos
-  duration-minutes: 60
-
-# Fuentes confiables de plugins
-trusted-sources:
-  - "https://www.spigotmc.org"
-  - "https://dev.bukkit.org"
-  - "https://github.com"
-  - "https://ci.dmulloy2.net"
-  - "https://ci.ender.zone"
-  - "https://download.luckperms.net"
-
-# Configuración de mensajes
-messages:
-  # Prefijo de mensajes
-  prefix: "§6[§ePluginHub§6]§r"
+  # Enviar estadísticas anónimas (bStats)
+  send-anonymous: true
   
-  # Idioma (en, es, fr, de)
-  language: "es"
+  # Guardar historial de instalaciones
+  save-history: true
+  
+  # Mostrar estadísticas en /pluginhub info
+  show-in-info: true
+
+# ═══════════════════════════════════════════════════════
+#  COMANDOS
+# ═══════════════════════════════════════════════════════
+
+commands:
+  # Habilitar/deshabilitar comandos específicos
+  search:
+    enabled: true
+    aliases: ["phsearch", "phs"]
+    cooldown: 3
+  
+  install:
+    enabled: true
+    aliases: ["phinstall", "phi"]
+    cooldown: 5
+  
+  update:
+    enabled: true
+    aliases: ["phupdate", "phu"]
+    cooldown: 5
+  
+  # Comando principal
+  main:
+    enabled: true
+    aliases: ["pluginhub", "ph"]
+
+# ═══════════════════════════════════════════════════════
+#  INTEGRACIÓN CON OTROS PLUGINS
+# ═══════════════════════════════════════════════════════
+
+integrations:
+  # Integración con LuckPerms
+  luckperms:
+    enabled: true
+    auto-setup-permissions: false
+  
+  # Integración con Vault
+  vault:
+    enabled: false
+    charge-for-install: false
+    install-cost: 1000.0
+  
+  # Integración con PlaceholderAPI
+  placeholderapi:
+    enabled: false
+
+# ═══════════════════════════════════════════════════════
+#  AVANZADO
+# ═══════════════════════════════════════════════════════
+
+advanced:
+  # Usar proxy para descargas
+  proxy:
+    enabled: false
+    host: "proxy.example.com"
+    port: 8080
+    username: ""
+    password: ""
+  
+  # User-Agent personalizado para requests
+  user-agent: "PluginHub/1.0"
+  
+  # Timeout para conexiones HTTP (milisegundos)
+  http-timeout: 15000
+  
+  # Permitir redirecciones HTTP
+  follow-redirects: true
+  
+  # Número máximo de redirecciones
+  max-redirects: 5
+  
+  # Usar DNS personalizado
+  custom-dns:
+    enabled: false
+    servers:
+      - "8.8.8.8"
+      - "1.1.1.1"
+
+# ═══════════════════════════════════════════════════════
+#  EXPERIMENTAL (Características en desarrollo)
+# ═══════════════════════════════════════════════════════
+
+experimental:
+  # Sistema de dependencias automático
+  auto-dependencies: false
+  
+  # Verificación de checksums
+  verify-checksums: false
+  
+  # Filtrado por versión de Minecraft
+  version-filtering: false
+  
+  # Interfaz web
+  web-interface:
+    enabled: false
+    port: 8080
+    password: "admin"
+  
+  # Base de datos SQLite
+  database:
+    enabled: false
+    path: "plugins/PluginHub/database.db"
+
+# ═══════════════════════════════════════════════════════
+#  NO MODIFICAR (Configuración interna)
+# ═══════════════════════════════════════════════════════
+
+internal:
+  config-version: 1
+  last-update-check: 0
