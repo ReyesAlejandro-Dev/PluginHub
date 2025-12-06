@@ -1,5 +1,35 @@
 name: PluginHub
-version: '1.0'
+version: 1.0.0
+description: "Centralized plugin manager for Paper servers - Search, install, and update plugins from multiple repositories automatically"
+author: Pecar
 main: com.pluginhub.PluginHub
-api-version: '1.21'
-authors: [ Pecar087 ]
+api-version: 1.21
+
+commands:
+  pluginhub:
+    description: "Main command for PluginHub"
+    usage: "/pluginhub <search|install|update|list> <plugin-name>"
+    aliases: [ph, plugins]
+  phsearch:
+    description: "Search for plugins across all repositories"
+    usage: "/phsearch <plugin-name>"
+  phinstall:
+    description: "Install a plugin automatically"
+    usage: "/phinstall <plugin-name>"
+  phupdate:
+    description: "Update all or specific plugins"
+    usage: "/phupdate [plugin-name]"
+
+permissions:
+  pluginhub.admin:
+    description: "Access to all PluginHub commands"
+    default: op
+  pluginhub.search:
+    description: "Permission to search for plugins"
+    default: true
+  pluginhub.install:
+    description: "Permission to install plugins"
+    default: op
+  pluginhub.update:
+    description: "Permission to update plugins"
+    default: op
