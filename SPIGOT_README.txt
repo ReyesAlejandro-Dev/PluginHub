@@ -1,9 +1,9 @@
-[CENTER][IMG]https://i.imgur.com/YourBannerImage.png[/IMG]
+[CENTER]
 
 [SIZE=7][B][COLOR=#FF6B35]PluginHub[/COLOR][/B][/SIZE]
-[SIZE=4][I]Gestor centralizado de plugins con búsqueda multi-fuente[/I][/SIZE]
+[SIZE=4][I]Gestor centralizado de plugins con búsqueda multi-fuente y altamente configurable[/I][/SIZE]
 
-[IMG]https://img.shields.io/badge/Version-2.0-brightgreen[/IMG] [IMG]https://img.shields.io/badge/Minecraft-1.21+-blue[/IMG] [IMG]https://img.shields.io/badge/Java-21-orange[/IMG]
+[IMG]https://img.shields.io/badge/Version-1.0-brightgreen[/IMG] [IMG]https://img.shields.io/badge/Minecraft-1.21+-blue[/IMG] [IMG]https://img.shields.io/badge/Java-21-orange[/IMG] [IMG]https://img.shields.io/badge/Config-100%2B%20Options-yellow[/IMG]
 
 [URL='https://github.com/ReyesAlejandro-Dev/PluginHub'][IMG]https://img.shields.io/badge/GitHub-Repository-black[/IMG][/URL]
 [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/issues'][IMG]https://img.shields.io/badge/Report-Issues-red[/IMG][/URL]
@@ -33,13 +33,16 @@
 [*] 🌐 Operaciones asíncronas (no lag)
 [*] 🎨 Interfaz colorida y clara
 [*] 🔒 Seguro y confiable
+[*] ⚙️ [B]100+ opciones configurables[/B]
+[*] 🎛️ Personalización total de mensajes
+[*] 🔧 Habilitar/deshabilitar fuentes individualmente
 [/LIST]
 
 [HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]📦 Instalación[/COLOR][/B][/SIZE]
 
-[B]1.[/B] Descarga [B]PluginHub-2.0.jar[/B]
+[B]1.[/B] Descarga [B]PluginHub-1.0.jar[/B]
 [B]2.[/B] Coloca el archivo en la carpeta [B]plugins/[/B] de tu servidor
 [B]3.[/B] Reinicia el servidor
 [B]4.[/B] ¡Listo! Usa [B]/pluginhub help[/B] para comenzar
