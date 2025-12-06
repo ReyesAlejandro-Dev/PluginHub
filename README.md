@@ -306,7 +306,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 **Pecar**
 
-- GitHub: [@Pecar](https://github.com/Pecar)
+- GitHub: [@Pecar00](https://github.com/Pecar)
 
 ---
 
@@ -324,7 +324,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 - 📧 Email: soporte@pluginhub.com
 - 💬 Discord: [Únete a nuestro servidor](https://discord.gg/pluginhub)
-- 🐛 Issues: [GitHub Issues](https://github.com/tuusuario/PluginHub/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/ReyesAlejandro-Dev/PluginHub/issues)
 
 ---
 
