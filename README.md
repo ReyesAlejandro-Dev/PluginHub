@@ -209,7 +209,7 @@ PluginHub busca automáticamente en múltiples repositorios:
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tuusuario/PluginHub.git
+git clone https://github.com/ReyesAlejandro-Dev/PluginHub.git
 cd PluginHub
 
 # Compilar con Gradle
