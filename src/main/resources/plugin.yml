@@ -1,0 +1,5 @@
+name: PluginHub
+version: '1.0'
+main: com.pluginhub.PluginHub
+api-version: '1.21'
+authors: [ Pecar087 ]
