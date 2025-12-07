@@ -1,6 +1,8 @@
 package com.pluginhub.commands;
 
 import com.pluginhub.PluginHub;
+import com.pluginhub.managers.BackupManager;
+import com.pluginhub.managers.HistoryManager;
 import com.pluginhub.managers.PluginDownloader;
 import com.pluginhub.models.PluginInfo;
 import org.bukkit.command.Command;
@@ -19,10 +21,15 @@ public final class PluginUpdateCommand implements CommandExecutor, TabCompleter 
 
     private final PluginHub plugin;
     private final PluginDownloader downloader;
+    private final HistoryManager historyManager;
+    private final BackupManager backupManager;
 
-    public PluginUpdateCommand(PluginHub plugin, PluginDownloader downloader) {
+    public PluginUpdateCommand(PluginHub plugin, PluginDownloader downloader,
+                               HistoryManager historyManager, BackupManager backupManager) {
         this.plugin = plugin;
         this.downloader = downloader;
+        this.historyManager = historyManager;
+        this.backupManager = backupManager;
     }
 
     @Override
@@ -107,6 +114,14 @@ public final class PluginUpdateCommand implements CommandExecutor, TabCompleter 
             return;
         }
 
+        // Crear backup antes de actualizar
+        sender.sendMessage("§e⏳ Creando backup antes de actualizar...");
+        if (backupManager.createBackup(info.getName())) {
+            sender.sendMessage("§a✓ Backup creado exitosamente");
+        } else {
+            sender.sendMessage("§e⚠ No se pudo crear backup, continuando...");
+        }
+
         sender.sendMessage("§e⏳ Actualizando §f" + info.getName() + "§e a la versión §f" + info.getVersion() + "§e...");
         sender.sendMessage("§7Fuente: §d" + info.getSource().getDisplayName());
         sender.sendMessage("§7Esto puede tardar unos segundos...");
@@ -133,6 +148,10 @@ public final class PluginUpdateCommand implements CommandExecutor, TabCompleter 
      * Maneja una actualización exitosa
      */
     private void handleSuccessfulUpdate(CommandSender sender, PluginInfo info) {
+        // Registrar en historial
+        String updatedBy = sender.getName();
+        historyManager.recordUpdate(info.getName(), "unknown", info.getVersion(), updatedBy);
+
         sender.sendMessage("§a✓ §f" + info.getName() + "§a actualizado a la versión §f" + info.getVersion());
         sender.sendMessage("");
         sender.sendMessage("§6╔════════════════════════════════════════╗");
@@ -140,6 +159,9 @@ public final class PluginUpdateCommand implements CommandExecutor, TabCompleter 
         sender.sendMessage("§6╚════════════════════════════════════════╝");
         sender.sendMessage("§7Reinicia el servidor para aplicar los cambios");
         sender.sendMessage("§7Comando: §e/reload confirm §7o reinicio completo");
+        sender.sendMessage("");
+        sender.sendMessage("§7Backup disponible: §e/phbackup list " + info.getName().toLowerCase());
+        sender.sendMessage("§7Historial: §e/phhistory " + info.getName().toLowerCase());
     }
 
     /**

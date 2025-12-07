@@ -1,7 +1,7 @@
 package com.pluginhub;
 
 import com.pluginhub.commands.*;
-import com.pluginhub.managers.PluginDownloader;
+import com.pluginhub.managers.*;
 import com.pluginhub.utils.ColorLogger;
 import com.pluginhub.utils.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,6 +20,10 @@ public final class PluginHub extends JavaPlugin {
     private PluginDownloader pluginDownloader;
     private ConfigManager configManager;
     private ColorLogger colorLogger;
+    private FavoritesManager favoritesManager;
+    private HistoryManager historyManager;
+    private ProfileManager profileManager;
+    private BackupManager backupManager;
 
     @Override
     public void onEnable() {
@@ -76,7 +80,12 @@ public final class PluginHub extends JavaPlugin {
      */
     private void initializeManagers() {
         this.pluginDownloader = new PluginDownloader(this, configManager);
-        colorLogger.logSuccess("PluginDownloader inicializado");
+        this.favoritesManager = new FavoritesManager(this);
+        this.historyManager = new HistoryManager(this);
+        this.profileManager = new ProfileManager(this);
+        this.backupManager = new BackupManager(this);
+        
+        colorLogger.logSuccess("Managers inicializados");
 
         // Crear carpeta de datos si no existe
         if (!getDataFolder().exists() && getDataFolder().mkdirs()) {
@@ -90,8 +99,13 @@ public final class PluginHub extends JavaPlugin {
     private void registerCommands() {
         registerCommand("pluginhub", new PluginHubCommand(this));
         registerCommand("phsearch", new PluginSearchCommand(this, pluginDownloader));
-        registerCommand("phinstall", new PluginInstallCommand(this, pluginDownloader));
-        registerCommand("phupdate", new PluginUpdateCommand(this, pluginDownloader));
+        registerCommand("phinstall", new PluginInstallCommand(this, pluginDownloader, historyManager, backupManager));
+        registerCommand("phupdate", new PluginUpdateCommand(this, pluginDownloader, historyManager, backupManager));
+        registerCommand("phfavorite", new PluginFavoriteCommand(this, favoritesManager));
+        registerCommand("phhistory", new PluginHistoryCommand(this, historyManager));
+        registerCommand("phprofile", new PluginProfileCommand(this, profileManager, pluginDownloader));
+        registerCommand("phbackup", new PluginBackupCommand(this, backupManager));
+        registerCommand("phinfo", new PluginInfoCommand(this, pluginDownloader));
 
         colorLogger.logSuccess("Comandos registrados");
         logRegisteredCommands();
@@ -113,6 +127,11 @@ public final class PluginHub extends JavaPlugin {
         colorLogger.logCommand("/phsearch", "Buscar plugins");
         colorLogger.logCommand("/phinstall", "Instalar plugins");
         colorLogger.logCommand("/phupdate", "Actualizar plugins");
+        colorLogger.logCommand("/phfavorite", "Gestionar favoritos");
+        colorLogger.logCommand("/phhistory", "Ver historial");
+        colorLogger.logCommand("/phprofile", "Gestionar perfiles");
+        colorLogger.logCommand("/phbackup", "Gestionar backups");
+        colorLogger.logCommand("/phinfo", "Información de plugins");
     }
 
     // ═══════════════════════════════════════════════════════
@@ -129,5 +148,21 @@ public final class PluginHub extends JavaPlugin {
 
     public ColorLogger getColorLogger() {
         return colorLogger;
+    }
+
+    public FavoritesManager getFavoritesManager() {
+        return favoritesManager;
+    }
+
+    public HistoryManager getHistoryManager() {
+        return historyManager;
+    }
+
+    public ProfileManager getProfileManager() {
+        return profileManager;
+    }
+
+    public BackupManager getBackupManager() {
+        return backupManager;
     }
 }

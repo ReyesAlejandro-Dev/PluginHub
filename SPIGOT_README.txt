@@ -1,19 +1,26 @@
 [CENTER]
 
 [SIZE=7][B][COLOR=#FF6B35]PluginHub[/COLOR][/B][/SIZE]
-[SIZE=4][I]Gestor centralizado de plugins con búsqueda multi-fuente y altamente configurable[/I][/SIZE]
+[SIZE=4][I]Gestor avanzado de plugins con búsqueda multi-fuente, favoritos, perfiles y backups[/I][/SIZE]
 
-[IMG]https://img.shields.io/badge/Version-1.0-brightgreen[/IMG] [IMG]https://img.shields.io/badge/Minecraft-1.21+-blue[/IMG] [IMG]https://img.shields.io/badge/Java-21-orange[/IMG] [IMG]https://img.shields.io/badge/Config-100%2B%20Options-yellow[/IMG]
+[IMG]https://img.shields.io/badge/Version-1.1-brightgreen[/IMG] [IMG]https://img.shields.io/badge/Minecraft-1.21+-blue[/IMG] [IMG]https://img.shields.io/badge/Java-21-orange[/IMG] [IMG]https://img.shields.io/badge/Config-100%2B%20Options-yellow[/IMG]
 
 [URL='https://github.com/ReyesAlejandro-Dev/PluginHub'][IMG]https://img.shields.io/badge/GitHub-Repository-black[/IMG][/URL]
 [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/issues'][IMG]https://img.shields.io/badge/Report-Issues-red[/IMG][/URL]
 [/CENTER]
 
-[HR][/HR]
-
 [SIZE=6][B][COLOR=#4ECDC4]✨ Descripción[/COLOR][/B][/SIZE]
 
 [B]PluginHub[/B] es un plugin avanzado que revoluciona la forma de gestionar plugins en tu servidor. Olvídate de buscar y descargar manualmente - ahora puedes buscar, instalar y actualizar plugins directamente desde el juego.
+
+[SIZE=5][B][COLOR=#FF6B35]🎉 NUEVO en v1.1:[/COLOR][/B][/SIZE]
+[LIST]
+[*] ⭐ [B]Sistema de Favoritos[/B] - Marca tus plugins preferidos
+[*] 📜 [B]Historial Completo[/B] - Rastrea todas las instalaciones con timestamps
+[*] 📦 [B]Perfiles de Plugins[/B] - Instala bundles completos (survival, creative, minigames)
+[*] 💾 [B]Backups Automáticos[/B] - Protección antes de cada actualización
+[*] ℹ️ [B]Información Detallada[/B] - Vista completa de cualquier plugin
+[/LIST]
 
 [B][COLOR=#FF6B35]🌐 Búsqueda Multi-Fuente:[/COLOR][/B]
 [LIST]
@@ -28,7 +35,12 @@
 [*] 🔍 Búsqueda en tiempo real en múltiples fuentes
 [*] 📥 Instalación automática con un solo comando
 [*] 📊 Información detallada (descargas, ratings, autor)
-[*] 🔄 Sistema de actualizaciones
+[*] 🔄 Sistema de actualizaciones con backups automáticos
+[*] ⭐ [B]Sistema de Favoritos[/B] - Marca tus plugins preferidos
+[*] 📜 [B]Historial Completo[/B] - Rastrea todas las instalaciones
+[*] 📦 [B]Perfiles de Plugins[/B] - Instala bundles predefinidos
+[*] � [eB]Backups Automáticos[/B] - Protección antes de actualizar
+[*] ℹ️ [B]Información Detallada[/B] - Vista completa de cualquier plugin
 [*] 💾 Caché inteligente para mejor rendimiento
 [*] 🌐 Operaciones asíncronas (no lag)
 [*] 🎨 Interfaz colorida y clara
@@ -38,11 +50,9 @@
 [*] 🔧 Habilitar/deshabilitar fuentes individualmente
 [/LIST]
 
-[HR][/HR]
-
 [SIZE=6][B][COLOR=#4ECDC4]📦 Instalación[/COLOR][/B][/SIZE]
 
-[B]1.[/B] Descarga [B]PluginHub-1.0.jar[/B]
+[B]1.[/B] Descarga [B]PluginHub-1.1.jar[/B]
 [B]2.[/B] Coloca el archivo en la carpeta [B]plugins/[/B] de tu servidor
 [B]3.[/B] Reinicia el servidor
 [B]4.[/B] ¡Listo! Usa [B]/pluginhub help[/B] para comenzar
@@ -53,8 +63,6 @@
 [*] [B]Servidor:[/B] Paper, Spigot, Purpur
 [*] [B]Java:[/B] 21 o superior
 [/LIST]
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]🎮 Comandos[/COLOR][/B][/SIZE]
 
@@ -96,14 +104,71 @@ Descarga e instala un plugin automáticamente.
 
 [LIST]
 [*] Sin argumentos: Lista plugins instalados
-[*] Con nombre: Actualiza un plugin específico
+[*] Con nombre: Actualiza un plugin específico (crea backup automático)
 [/LIST]
 
 [B]Ejemplos:[/B]
 [CODE]/phupdate
 /phupdate essentialsx[/CODE]
 
-[HR][/HR]
+[SIZE=5][B][COLOR=#FF6B35]⭐ Gestionar Favoritos (NUEVO v1.1)[/COLOR][/B][/SIZE]
+[CODE]/phfavorite <add|remove|list|clear> [plugin][/CODE]
+
+Marca y gestiona tus plugins favoritos para acceso rápido.
+
+[B]Ejemplos:[/B]
+[CODE]/phfavorite add essentialsx
+/phfavorite remove worldedit
+/phfavorite list
+/phfavorite clear[/CODE]
+
+[SIZE=5][B][COLOR=#FF6B35]📜 Ver Historial (NUEVO v1.1)[/COLOR][/B][/SIZE]
+[CODE]/phhistory [plugin][/CODE]
+
+Ve el historial completo de instalaciones y actualizaciones.
+
+[B]Ejemplos:[/B]
+[CODE]/phhistory
+/phhistory essentialsx[/CODE]
+
+[SIZE=5][B][COLOR=#FF6B35]📦 Gestionar Perfiles (NUEVO v1.1)[/COLOR][/B][/SIZE]
+[CODE]/phprofile <list|info|create|delete|install|add|remove> [args][/CODE]
+
+Gestiona perfiles de plugins (bundles predefinidos).
+
+[B]Perfiles Incluidos:[/B]
+[LIST]
+[*] [B]starter-pack[/B] - Plugins esenciales (EssentialsX, LuckPerms, Vault)
+[*] [B]survival[/B] - Servidor de supervivencia completo
+[*] [B]creative[/B] - Servidor creativo con herramientas
+[*] [B]minigames[/B] - Base para servidor de minijuegos
+[/LIST]
+
+[B]Ejemplos:[/B]
+[CODE]/phprofile list
+/phprofile info survival
+/phprofile install starter-pack
+/phprofile create myserver "Mi configuración"
+/phprofile add myserver essentialsx[/CODE]
+
+[SIZE=5][B][COLOR=#FF6B35]💾 Gestionar Backups (NUEVO v1.1)[/COLOR][/B][/SIZE]
+[CODE]/phbackup <create|restore|list|delete> <plugin> [backup][/CODE]
+
+Crea y gestiona backups de plugins para actualizaciones seguras.
+
+[B]Ejemplos:[/B]
+[CODE]/phbackup create worldedit
+/phbackup list worldedit
+/phbackup restore worldedit worldedit_2024-12-06_15-30-45.jar
+/phbackup delete worldedit[/CODE]
+
+[SIZE=5][B][COLOR=#FF6B35]ℹ️ Información Detallada (NUEVO v1.1)[/COLOR][/B][/SIZE]
+[CODE]/phinfo <plugin>[/CODE]
+
+Muestra información completa de cualquier plugin.
+
+[B]Ejemplo:[/B]
+[CODE]/phinfo luckperms[/CODE]
 
 [SIZE=6][B][COLOR=#4ECDC4]🔑 Permisos[/COLOR][/B][/SIZE]
 
@@ -133,9 +198,32 @@ Descarga e instala un plugin automáticamente.
 [TD]Permite actualizar plugins[/TD]
 [TD]OP[/TD]
 [/TR]
+[TR]
+[TD][CODE]pluginhub.favorite[/CODE][/TD]
+[TD]Permite gestionar favoritos[/TD]
+[TD]OP[/TD]
+[/TR]
+[TR]
+[TD][CODE]pluginhub.history[/CODE][/TD]
+[TD]Permite ver historial[/TD]
+[TD]OP[/TD]
+[/TR]
+[TR]
+[TD][CODE]pluginhub.profile[/CODE][/TD]
+[TD]Permite gestionar perfiles[/TD]
+[TD]OP[/TD]
+[/TR]
+[TR]
+[TD][CODE]pluginhub.backup[/CODE][/TD]
+[TD]Permite gestionar backups[/TD]
+[TD]OP[/TD]
+[/TR]
+[TR]
+[TD][CODE]pluginhub.info[/CODE][/TD]
+[TD]Permite ver información de plugins[/TD]
+[TD]Todos[/TD]
+[/TR]
 [/TABLE]
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]⚙️ Configuración[/COLOR][/B][/SIZE]
 
@@ -150,6 +238,29 @@ download:
 cache:
   enabled: true       # Caché activado
   duration-minutes: 60  # Duración del caché
+
+# Favoritos (NUEVO v1.1)
+favorites:
+  enabled: true       # Sistema de favoritos
+  highlight-in-search: true
+
+# Historial (NUEVO v1.1)
+history:
+  enabled: true       # Registro de historial
+  max-records-per-plugin: 50
+  track-installer: true
+
+# Perfiles (NUEVO v1.1)
+profiles:
+  enabled: true       # Sistema de perfiles
+  create-defaults: true
+  allow-bulk-install: true
+
+# Backups (NUEVO v1.1)
+backups:
+  enabled: true       # Sistema de backups
+  auto-backup-on-update: true
+  max-backups-per-plugin: 5
 
 # Fuentes confiables
 trusted-sources:
@@ -184,38 +295,60 @@ trusted-sources:
 
 [SIZE=6][B][COLOR=#4ECDC4]💡 Ejemplos de Uso[/COLOR][/B][/SIZE]
 
-[SIZE=5][B][COLOR=#FF6B35]Configurar Servidor de Supervivencia[/COLOR][/B][/SIZE]
+[SIZE=5][B][COLOR=#FF6B35]Configurar Servidor de Supervivencia (Método Rápido)[/COLOR][/B][/SIZE]
 
-[CODE]# Instalar comandos básicos
+[CODE]# Usar perfil predefinido (NUEVO v1.1)
+/phprofile install survival
+
+# O instalar manualmente
 /phinstall essentialsx
-
-# Instalar sistema de permisos
 /phinstall luckperms
-
-# Instalar protección
 /phinstall coreprotect
-
-# Instalar economía
 /phinstall vault
 
 # Reiniciar servidor
 /stop[/CODE]
 
-[SIZE=5][B][COLOR=#FF6B35]Configurar Servidor Creativo[/COLOR][/B][/SIZE]
+[SIZE=5][B][COLOR=#FF6B35]Configurar Servidor Creativo (Método Rápido)[/COLOR][/B][/SIZE]
 
-[CODE]# Instalar edición de mundos
+[CODE]# Usar perfil predefinido (NUEVO v1.1)
+/phprofile install creative
+
+# O instalar manualmente
 /phinstall worldedit
-
-# Instalar sistema de parcelas
 /phinstall plotsquared
-
-# Instalar comandos útiles
 /phinstall essentialsx
 
 # Reiniciar servidor
 /stop[/CODE]
 
-[HR][/HR]
+[SIZE=5][B][COLOR=#FF6B35]Actualización Segura con Backup[/COLOR][/B][/SIZE]
+
+[CODE]# El backup se crea automáticamente
+/phupdate essentialsx
+
+# Si algo sale mal, restaurar
+/phbackup list essentialsx
+/phbackup restore essentialsx essentialsx_2024-12-06_15-30-45.jar
+
+# Reiniciar servidor
+/stop[/CODE]
+
+[SIZE=5][B][COLOR=#FF6B35]Crear Perfil Personalizado[/COLOR][/B][/SIZE]
+
+[CODE]# Crear perfil
+/phprofile create myrpg "Mi servidor RPG"
+
+# Agregar plugins
+/phprofile add myrpg mythicmobs
+/phprofile add myrpg citizens
+/phprofile add myrpg questsplus
+
+# Instalar en otro servidor
+/phprofile install myrpg
+
+# Reiniciar servidor
+/stop[/CODE]
 
 [SIZE=6][B][COLOR=#4ECDC4]🌍 Fuentes de Plugins[/COLOR][/B][/SIZE]
 
@@ -251,8 +384,6 @@ PluginHub busca automáticamente en múltiples repositorios:
 
 [CENTER][B][SIZE=5]¡Busca cualquier plugin disponible en estas fuentes![/SIZE][/B][/CENTER]
 
-[HR][/HR]
-
 [SIZE=6][B][COLOR=#4ECDC4]🔧 Información Técnica[/COLOR][/B][/SIZE]
 
 [B][COLOR=#FF6B35]Arquitectura:[/COLOR][/B]
@@ -281,8 +412,6 @@ PluginHub busca automáticamente en múltiples repositorios:
 [*] Documentación completa
 [*] Ejemplos de uso
 [/LIST]
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]🚨 Solución de Problemas[/COLOR][/B][/SIZE]
 
@@ -333,8 +462,6 @@ Es normal, la búsqueda es en múltiples fuentes y tarda 2-5 segundos. Las opera
 Si persiste, ajusta el caché en config.yml para reducir búsquedas frecuentes.
 [/SPOILER]
 
-[HR][/HR]
-
 [SIZE=6][B][COLOR=#4ECDC4]📊 Estadísticas[/COLOR][/B][/SIZE]
 
 [CENTER][SIZE=5][B]Ver estadísticas del sistema:[/B][/SIZE]
@@ -349,25 +476,30 @@ Si persiste, ajusta el caché en config.yml para reducir búsquedas frecuentes.
 [*] Configuración actual
 [/LIST][/CENTER]
 
-[HR][/HR]
+[SIZE=6][B][COLOR=#4ECDC4]🔮 Roadmap v2.0[/COLOR][/B][/SIZE]
 
-[SIZE=6][B][COLOR=#4ECDC4]🔮 Roadmap v3.0[/COLOR][/B][/SIZE]
-
-[B]Próximas características:[/B]
+[B]Características v1.1 (COMPLETADAS):[/B]
 [LIST]
-[*] ✅ Actualizaciones automáticas programadas
-[*] ✅ Sistema de dependencias automático
-[*] ✅ Verificación de checksums SHA-256
-[*] ✅ Filtrado por versión de Minecraft
-[*] ✅ Base de datos SQLite para caché persistente
-[*] ✅ Interfaz web de administración
-[*] ✅ Notificaciones de actualizaciones
-[*] ✅ Backup automático antes de actualizar
-[*] ✅ Integración con GitHub Releases
-[*] ✅ Sistema de ratings y reviews
+[*] ✅ Sistema de Favoritos
+[*] ✅ Historial de Instalaciones
+[*] ✅ Perfiles de Plugins
+[*] ✅ Backups Automáticos
+[*] ✅ Comando de Información Detallada
 [/LIST]
 
-[HR][/HR]
+[B]Próximas características v2.0:[/B]
+[LIST]
+[*] 🔄 Actualizaciones automáticas programadas
+[*] 🔗 Sistema de dependencias automático
+[*] 🔒 Verificación de checksums SHA-256
+[*] 📋 Filtrado por versión de Minecraft
+[*] 💾 Base de datos SQLite para caché persistente
+[*] 🌐 Interfaz web de administración
+[*] 📢 Notificaciones Discord webhook
+[*] 🔍 Filtros avanzados de búsqueda
+[*] 📊 Comparación de plugins
+[*] 🎨 Personalización de temas
+[/LIST]
 
 [SIZE=6][B][COLOR=#4ECDC4]🤝 Contribuir[/COLOR][/B][/SIZE]
 
@@ -387,8 +519,6 @@ Si persiste, ajusta el caché en config.yml para reducir búsquedas frecuentes.
 [B]Reportar bugs:[/B]
 [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/issues']GitHub Issues[/URL]
 
-[HR][/HR]
-
 [SIZE=6][B][COLOR=#4ECDC4]📞 Soporte[/COLOR][/B][/SIZE]
 
 [B]¿Necesitas ayuda?[/B]
@@ -397,17 +527,13 @@ Si persiste, ajusta el caché en config.yml para reducir búsquedas frecuentes.
 [*] 💬 [B]Discord:[/B] [Próximamente]
 [*] 🐛 [B]GitHub Issues:[/B] [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/issues']Reportar Problema[/URL]
 [*] 📖 [B]Documentación:[/B] [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/README.md']README Completo[/URL]
-[*] 💡 [B]Ejemplos:[/B] [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/EXAMPLES_V2.md']Guía de Ejemplos[/URL]
+[*] 💡 [B]Ejemplos:[/B] [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/FEATURES_v1.1.md']Guía de Características[/URL]
 [/LIST]
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]📝 Licencia[/COLOR][/B][/SIZE]
 
 Este proyecto está bajo la Licencia MIT.
 Ver [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/LICENSE']LICENSE[/URL] para más detalles.
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]👤 Autor[/COLOR][/B][/SIZE]
 
@@ -416,8 +542,6 @@ Ver [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/LICENSE']LIC
 [*] GitHub: [URL='https://github.com/ReyesAlejandro-Dev']@ReyesAlejandro-Dev[/URL]
 [*] Proyecto: [URL='https://github.com/ReyesAlejandro-Dev/PluginHub']PluginHub[/URL]
 [/LIST]
-
-[HR][/HR]
 
 [SIZE=6][B][COLOR=#4ECDC4]🙏 Agradecimientos[/COLOR][/B][/SIZE]
 
@@ -428,8 +552,6 @@ Ver [URL='https://github.com/ReyesAlejandro-Dev/PluginHub/blob/main/LICENSE']LIC
 [*] Modrinth Team
 [*] Todos los creadores de plugins
 [/LIST]
-
-[HR][/HR]
 
 [CENTER][SIZE=6][B][COLOR=#FF6B35]⭐ Si te gusta este plugin, dale una estrella en GitHub! ⭐[/COLOR][/B][/SIZE]
 

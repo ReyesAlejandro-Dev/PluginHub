@@ -1,6 +1,8 @@
 package com.pluginhub.commands;
 
 import com.pluginhub.PluginHub;
+import com.pluginhub.managers.BackupManager;
+import com.pluginhub.managers.HistoryManager;
 import com.pluginhub.managers.PluginDownloader;
 import com.pluginhub.models.PluginInfo;
 import org.bukkit.command.Command;
@@ -20,10 +22,15 @@ public final class PluginInstallCommand implements CommandExecutor, TabCompleter
 
     private final PluginHub plugin;
     private final PluginDownloader downloader;
+    private final HistoryManager historyManager;
+    private final BackupManager backupManager;
 
-    public PluginInstallCommand(PluginHub plugin, PluginDownloader downloader) {
+    public PluginInstallCommand(PluginHub plugin, PluginDownloader downloader, 
+                                HistoryManager historyManager, BackupManager backupManager) {
         this.plugin = plugin;
         this.downloader = downloader;
+        this.historyManager = historyManager;
+        this.backupManager = backupManager;
     }
 
     @Override
@@ -92,6 +99,15 @@ public final class PluginInstallCommand implements CommandExecutor, TabCompleter
      * Maneja una instalación exitosa
      */
     private void handleSuccessfulInstallation(CommandSender sender, PluginInfo info) {
+        // Registrar en historial
+        String installedBy = sender.getName();
+        historyManager.recordInstall(
+            info.getName(), 
+            info.getVersion(), 
+            info.getSource().getDisplayName(), 
+            installedBy
+        );
+
         sender.sendMessage("§a✓ §f" + info.getName() + " v" + info.getVersion() + "§a instalado correctamente");
         sender.sendMessage("");
         sender.sendMessage("§6╔════════════════════════════════════════╗");
@@ -102,6 +118,7 @@ public final class PluginInstallCommand implements CommandExecutor, TabCompleter
         sender.sendMessage("§73. Verifica que funcione correctamente");
         sender.sendMessage("");
         sender.sendMessage("§7Más información: §9" + info.getSourceUrl());
+        sender.sendMessage("§7Historial: §e/phhistory " + info.getName().toLowerCase());
     }
 
     /**

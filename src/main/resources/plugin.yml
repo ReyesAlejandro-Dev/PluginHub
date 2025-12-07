@@ -19,11 +19,39 @@ commands:
   phupdate:
     description: "Update all or specific plugins"
     usage: "/phupdate [plugin-name]"
+  phfavorite:
+    description: "Manage favorite plugins"
+    usage: "/phfavorite <add|remove|list|clear> [plugin-name]"
+    aliases: [phfav]
+  phhistory:
+    description: "View installation history"
+    usage: "/phhistory [plugin-name]"
+    aliases: [phhist]
+  phprofile:
+    description: "Manage plugin profiles"
+    usage: "/phprofile <list|info|create|delete|install|add|remove> [args]"
+    aliases: [phprof]
+  phbackup:
+    description: "Manage plugin backups"
+    usage: "/phbackup <create|restore|list|delete> <plugin-name> [backup-name]"
+    aliases: [phbak]
+  phinfo:
+    description: "View detailed plugin information"
+    usage: "/phinfo <plugin-name>"
 
 permissions:
   pluginhub.admin:
     description: "Access to all PluginHub commands"
     default: op
+    children:
+      pluginhub.search: true
+      pluginhub.install: true
+      pluginhub.update: true
+      pluginhub.favorite: true
+      pluginhub.history: true
+      pluginhub.profile: true
+      pluginhub.backup: true
+      pluginhub.info: true
   pluginhub.search:
     description: "Permission to search for plugins"
     default: true
@@ -33,3 +61,18 @@ permissions:
   pluginhub.update:
     description: "Permission to update plugins"
     default: op
+  pluginhub.favorite:
+    description: "Permission to manage favorites"
+    default: op
+  pluginhub.history:
+    description: "Permission to view history"
+    default: op
+  pluginhub.profile:
+    description: "Permission to manage profiles"
+    default: op
+  pluginhub.backup:
+    description: "Permission to manage backups"
+    default: op
+  pluginhub.info:
+    description: "Permission to view plugin info"
+    default: true

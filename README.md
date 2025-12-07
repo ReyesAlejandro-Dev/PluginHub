@@ -1,6 +1,6 @@
-# 🔌 PluginHub v1.0
+# 🔌 PluginHub v1.1
 
-**Centralized Plugin Manager for Paper/Spigot Servers**
+**Advanced Plugin Manager for Paper/Spigot Servers**
 
 PluginHub is an advanced, production-ready plugin that enables administrators to search, install, and update Minecraft plugins from multiple repositories (SpigotMC, Modrinth, Hangar) directly in-game via CLI, eliminating manual downloads and multi-site navigation.
 
@@ -36,6 +36,10 @@ PluginHub is an advanced, production-ready plugin that enables administrators to
 - ⚡ **One-Command Install** - Auto-download and install with `/phinstall pluginname`
 - 📊 **Detailed Info** - Downloads, ratings, authors, compatible versions
 - 🔄 **Smart Update System** - Keep plugins current with auto-detection
+- ⭐ **Favorites System** - Mark and manage your favorite plugins
+- 📜 **Installation History** - Track all installs/updates with timestamps
+- 📦 **Plugin Profiles** - Install preset plugin bundles (survival, creative, minigames)
+- 💾 **Automatic Backups** - Safe updates with automatic backup creation
 - 🎨 **Beautiful CLI Output** - Clear, colorful, organized results
 - ⚙️ **Flexible Config** - Customize timeouts, retries, sources (100+ options in config.yml)
 - 🔒 **Security First** - URL validation, trusted source whitelist, HTTPS enforced
@@ -80,6 +84,13 @@ PluginHub is an advanced, production-ready plugin that enables administrators to
 # Manage plugins
 /phupdate              # List installed plugins
 /phupdate essentialsx  # Update specific plugin
+
+# NEW in v1.1 - Advanced Features
+/phfavorite add essentialsx    # Add to favorites
+/phhistory essentialsx         # View install history
+/phprofile install survival    # Install survival profile
+/phbackup create worldedit     # Create backup
+/phinfo luckperms              # Detailed plugin info
 ```
 
 ---
@@ -129,7 +140,81 @@ Automatically downloads and installs a plugin. **Requires server restart to acti
 /phupdate [pluginname]
 ```
 - No args: Lists all installed plugins with versions
-- With name: Updates specific plugin (v2.0 feature)
+- With name: Updates specific plugin (creates backup automatically)
+
+### Favorite Command (NEW v1.1)
+```
+/phfavorite <add|remove|list|clear> [plugin]
+```
+Manage your favorite plugins for quick access.
+
+**Examples:**
+```
+/phfavorite add essentialsx    # Add to favorites
+/phfavorite remove worldedit   # Remove from favorites
+/phfavorite list               # Show all favorites
+/phfavorite clear              # Clear all favorites
+```
+
+### History Command (NEW v1.1)
+```
+/phhistory [pluginname]
+```
+View installation and update history with timestamps.
+
+**Examples:**
+```
+/phhistory                     # Show all history
+/phhistory essentialsx         # Show specific plugin history
+```
+
+### Profile Command (NEW v1.1)
+```
+/phprofile <list|info|create|delete|install|add|remove> [args]
+```
+Manage plugin profiles (preset bundles).
+
+**Built-in Profiles:**
+- `starter-pack` - Essential plugins (EssentialsX, LuckPerms, Vault)
+- `survival` - Complete survival server (WorldGuard, CoreProtect, etc.)
+- `creative` - Creative server tools (WorldEdit, PlotSquared)
+- `minigames` - Minigame server base (Multiverse, Citizens)
+
+**Examples:**
+```
+/phprofile list                        # Show all profiles
+/phprofile info survival               # View profile details
+/phprofile install starter-pack        # Install entire profile
+/phprofile create myserver "My Setup"  # Create custom profile
+/phprofile add myserver essentialsx    # Add plugin to profile
+```
+
+### Backup Command (NEW v1.1)
+```
+/phbackup <create|restore|list|delete> <plugin> [backup]
+```
+Manage plugin backups for safe updates.
+
+**Examples:**
+```
+/phbackup create worldedit             # Create backup
+/phbackup list worldedit               # Show all backups
+/phbackup restore worldedit backup.jar # Restore from backup
+/phbackup delete worldedit             # Delete all backups
+```
+
+### Info Command (NEW v1.1)
+```
+/phinfo <pluginname>
+```
+Display detailed information about any plugin.
+
+**Shows:**
+- Version, author, description
+- Download count, rating
+- Source repository
+- Installation status
+- Direct links
 
 ---
 
@@ -137,10 +222,15 @@ Automatically downloads and installs a plugin. **Requires server restart to acti
 
 | Permission | Allows | Default |
 |-----------|--------|---------|
-| `pluginhub.admin` | All commands | OP |
+| `pluginhub.admin` | All commands (includes all below) | OP |
 | `pluginhub.search` | Search plugins | Everyone |
 | `pluginhub.install` | Install plugins | OP |
 | `pluginhub.update` | Update plugins | OP |
+| `pluginhub.favorite` | Manage favorites | OP |
+| `pluginhub.history` | View history | OP |
+| `pluginhub.profile` | Manage profiles | OP |
+| `pluginhub.backup` | Manage backups | OP |
+| `pluginhub.info` | View plugin info | Everyone |
 
 **Example (LuckPerms):**
 ```
@@ -148,6 +238,8 @@ pluginhub.admin:
   - "admin group"
 pluginhub.install:
   - "trusted group"
+pluginhub.info:
+  - "default group"
 ```
 
 ---
@@ -248,6 +340,38 @@ notifications:
     webhook-url: ""
     notify-install: true
     notify-update: true
+```
+
+**Favorites** (2 options - NEW v1.1)
+```yaml
+favorites:
+  enabled: true               # Enable favorites system
+  highlight-in-search: true   # Highlight favorites in search
+```
+
+**History** (3 options - NEW v1.1)
+```yaml
+history:
+  enabled: true               # Enable history tracking
+  max-records-per-plugin: 50  # Max records to keep
+  track-installer: true       # Track who installed
+```
+
+**Profiles** (3 options - NEW v1.1)
+```yaml
+profiles:
+  enabled: true               # Enable profiles system
+  create-defaults: true       # Create default profiles
+  allow-bulk-install: true    # Allow profile installation
+```
+
+**Backups** (4 options - NEW v1.1)
+```yaml
+backups:
+  enabled: true               # Enable backup system
+  auto-backup-on-update: true # Auto backup before update
+  max-backups-per-plugin: 5   # Max backups to keep
+  compress: false             # Compress backups
 ```
 
 **Statistics** (4 options)
@@ -377,11 +501,21 @@ PluginHub (Bukkit/Paper Plugin)
 
 ## 🔮 Roadmap
 
-### v1.1 (Next Release)
+### v1.1 (RELEASED - Current Version) ✅
+- [x] **Favorites System** - Mark and manage favorite plugins
+- [x] **Installation History** - Track all installs/updates with timestamps
+- [x] **Plugin Profiles** - Preset bundles (survival, creative, minigames)
+- [x] **Automatic Backups** - Safe updates with backup creation
+- [x] **Detailed Info Command** - Complete plugin information display
+- [x] **5 New Commands** - /phfavorite, /phhistory, /phprofile, /phbackup, /phinfo
+- [x] **Enhanced Permissions** - Granular control for all features
+- [x] **Data Persistence** - favorites.yml, history.yml, profiles.yml
+
+### v1.2 (Next Release)
 - [ ] Discord webhook notifications for updates
 - [ ] Plugin size/version filters in search
 - [ ] Better error messages & troubleshooting
-- [ ] Spanish language support
+- [ ] Spanish language support complete
 
 ### v2.0 (Q1 2026)
 - [ ] Scheduled auto-updates (no server restart required)
@@ -425,9 +559,18 @@ src/main/java/com/pluginhub/
 │   ├── PluginHubCommand.java      # Main command + tab completion
 │   ├── PluginSearchCommand.java   # Multi-source search
 │   ├── PluginInstallCommand.java  # Auto-install with validation
-│   └── PluginUpdateCommand.java   # Update management
+│   ├── PluginUpdateCommand.java   # Update management
+│   ├── PluginFavoriteCommand.java # Favorites management (v1.1)
+│   ├── PluginHistoryCommand.java  # History viewer (v1.1)
+│   ├── PluginProfileCommand.java  # Profile management (v1.1)
+│   ├── PluginBackupCommand.java   # Backup management (v1.1)
+│   └── PluginInfoCommand.java     # Detailed info (v1.1)
 ├── managers/                   # Business logic layer
-│   └── PluginDownloader.java      # Download orchestrator + cache
+│   ├── PluginDownloader.java      # Download orchestrator + cache
+│   ├── FavoritesManager.java      # Favorites system (v1.1)
+│   ├── HistoryManager.java        # History tracking (v1.1)
+│   ├── ProfileManager.java        # Profile management (v1.1)
+│   └── BackupManager.java         # Backup system (v1.1)
 ├── api/                        # External API clients
 │   ├── PluginSource.java          # Source enum (Spigot/Modrinth/etc)
 │   ├── SpigotAPI.java             # Spiget API client

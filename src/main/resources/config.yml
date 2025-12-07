@@ -317,6 +317,62 @@ advanced:
       - "1.1.1.1"
 
 # ═══════════════════════════════════════════════════════
+#  FAVORITOS
+# ═══════════════════════════════════════════════════════
+
+favorites:
+  # Habilitar sistema de favoritos
+  enabled: true
+  
+  # Mostrar favoritos en búsquedas
+  highlight-in-search: true
+
+# ═══════════════════════════════════════════════════════
+#  HISTORIAL
+# ═══════════════════════════════════════════════════════
+
+history:
+  # Habilitar registro de historial
+  enabled: true
+  
+  # Número máximo de registros por plugin
+  max-records-per-plugin: 50
+  
+  # Guardar información del instalador
+  track-installer: true
+
+# ═══════════════════════════════════════════════════════
+#  PERFILES
+# ═══════════════════════════════════════════════════════
+
+profiles:
+  # Habilitar sistema de perfiles
+  enabled: true
+  
+  # Crear perfiles predeterminados
+  create-defaults: true
+  
+  # Permitir instalación de perfiles completos
+  allow-bulk-install: true
+
+# ═══════════════════════════════════════════════════════
+#  BACKUPS
+# ═══════════════════════════════════════════════════════
+
+backups:
+  # Habilitar sistema de backups
+  enabled: true
+  
+  # Crear backup automático antes de actualizar
+  auto-backup-on-update: true
+  
+  # Número máximo de backups por plugin
+  max-backups-per-plugin: 5
+  
+  # Comprimir backups (ahorra espacio)
+  compress: false
+
+# ═══════════════════════════════════════════════════════
 #  EXPERIMENTAL (Características en desarrollo)
 # ═══════════════════════════════════════════════════════
 
