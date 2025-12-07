@@ -410,8 +410,4 @@ Made with ❤️ and Kiro IDE by Reyes Alejandro
 *PluginHub: Simplifying plugin management for 50,000+ Minecraft servers worldwide.*
 
 </div>
-```
 
-9. **AWS mention** - Agregué "AWS Startup Program Member" (legitimidad).
-
-Copia esto al README.md de tu GitHub y sube con commit. ¡Eso es oro puro para los reviewers de AWS! 🚀
