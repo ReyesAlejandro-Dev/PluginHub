@@ -152,64 +152,160 @@ pluginhub.install:
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Configuration (100+ Options)
 
-Auto-generated in `plugins/PluginHub/config.yml`:
+Auto-generated in `plugins/PluginHub/config.yml` with detailed comments:
 
+### Core Categories
+
+**General Settings** (5 options)
+```yaml
+general:
+  language: "es"              # Language (en, es, fr, de, pt)
+  prefix: "&6[&ePluginHub&6]&r"
+  show-banner: true           # ASCII art on startup
+  debug: false                # Verbose logging
+  check-updates: true         # Check for plugin updates
 ```
-# Core Settings
-settings:
-  debug: false
-  language: en
-  prefix: "§a[PluginHub]§r"
 
-# Download Configuration
+**Search Configuration** (8 options)
+```yaml
+search:
+  max-results: 10             # Results per search
+  timeout: 10                 # Timeout in seconds
+  show-detailed-info: true    # Show downloads/ratings
+  sort-by-downloads: true     # Sort by popularity
+  sources:
+    spigot: true              # Enable SpigotMC API
+    modrinth: true            # Enable Modrinth API
+    hangar: true              # Enable Hangar API
+    bukkit: true              # Enable BukkitDev scraper
+```
+
+**Download Settings** (7 options)
+```yaml
 download:
-  timeout-ms: 30000        # 30 second timeout per file
-  max-retries: 3           # Retry failed downloads
-  verify-ssl: true         # Enforce HTTPS certificates
-  user-agent: "PluginHub/1.0"
-
-# API & Repositories
-repositories:
-  spigotmc:
-    enabled: true
-    timeout-ms: 10000
-  modrinth:
-    enabled: true
-    timeout-ms: 10000
-  hangar:
-    enabled: true
-    timeout-ms: 10000
-  bukkitdev:
-    enabled: false         # Disabled by default (legacy)
-
-# Performance Optimization
-cache:
-  enabled: true
-  ttl-minutes: 60
-  max-entries: 1000
-  persist-disk: true
-
-# Security
-security:
-  trusted-hosts:
-    - "www.spigotmc.org"
-    - "api.spigotmc.org"
-    - "modrinth.com"
-    - "hangar.papermc.io"
-  require-https: true
-  validate-checksums: false
-
-# Advanced
-advanced:
-  max-concurrent-downloads: 3
-  connection-pool-size: 10
-  search-timeout-ms: 15000
-  result-limit: 20
+  timeout: 30000              # Timeout in milliseconds
+  retries: 3                  # Retry attempts
+  retry-delay: 2000           # Delay between retries (ms)
+  exponential-backoff: true   # Increase delay each retry
+  show-progress: true         # Show download progress
+  verify-integrity: false     # Verify file integrity
+  max-file-size: 50           # Max size in MB (0 = unlimited)
 ```
 
-**Reload configuration:** `/pluginhub reload`
+**Cache System** (5 options)
+```yaml
+cache:
+  enabled: true               # Enable caching
+  duration-minutes: 60        # Cache TTL
+  clear-on-restart: false     # Clear on server restart
+  max-size: 1000              # Max cached plugins
+  persistent: false           # Save to disk
+```
+
+**Security** (5 options)
+```yaml
+security:
+  trusted-sources:            # Allowed URLs
+    - "https://www.spigotmc.org"
+    - "https://api.spiget.org"
+    - "https://api.modrinth.com"
+    - "https://hangar.papermc.io"
+    - "https://dev.bukkit.org"
+  verify-ssl: true            # Verify SSL certificates
+  https-only: true            # Require HTTPS
+  block-premium: false        # Block premium plugins
+  require-confirmation: false # Confirm before install
+```
+
+**Performance Tuning** (4 options)
+```yaml
+performance:
+  thread-pool-size: 5         # Async operation threads
+  compress-cache: false       # Compress cache data
+  max-concurrent-searches: 2  # Searches per player
+  search-cooldown: 3          # Cooldown in seconds
+```
+
+**Custom Messages** (15+ options)
+```yaml
+messages:
+  search-start: "&e⏳ Buscando '&f{query}&e'..."
+  install-success: "&a✓ &f{plugin}&a instalado"
+  # ... all messages customizable
+  # Variables: {query}, {plugin}, {version}, {source}, {count}
+```
+
+**Notifications** (7 options)
+```yaml
+notifications:
+  notify-on-start: true       # Notify on plugin start
+  notify-on-install: true     # Notify on installs
+  notify-on-error: true       # Notify on errors
+  discord:
+    enabled: false            # Discord webhook
+    webhook-url: ""
+    notify-install: true
+    notify-update: true
+```
+
+**Statistics** (4 options)
+```yaml
+statistics:
+  enabled: true               # Collect stats
+  send-anonymous: true        # bStats integration
+  save-history: true          # Save install history
+  show-in-info: true          # Show in /pluginhub info
+```
+
+**Command Settings** (8 options)
+```yaml
+commands:
+  search:
+    enabled: true             # Enable command
+    aliases: ["phsearch", "phs"]
+    cooldown: 3               # Cooldown in seconds
+  install:
+    enabled: true
+    aliases: ["phinstall", "phi"]
+    cooldown: 5
+  # ... similar for update and main commands
+```
+
+**Advanced Options** (10+ options)
+```yaml
+advanced:
+  user-agent: "PluginHub/1.0"
+  http-timeout: 15000         # HTTP timeout (ms)
+  follow-redirects: true      # Follow HTTP redirects
+  max-redirects: 5            # Max redirect hops
+  proxy:
+    enabled: false            # Use HTTP proxy
+    host: ""
+    port: 8080
+    username: ""
+    password: ""
+```
+
+**Experimental Features** (8 options - v2.0)
+```yaml
+experimental:
+  auto-dependencies: false    # Auto-install dependencies
+  verify-checksums: false     # SHA-256 verification
+  version-filtering: false    # Filter by MC version
+  web-interface:
+    enabled: false            # Web dashboard
+    port: 8080
+    password: "admin"
+  database:
+    enabled: false            # SQLite database
+    path: "plugins/PluginHub/database.db"
+```
+
+**Reload configuration:** `/pluginhub reload` (no restart required)
+
+**Full documentation:** See `CONFIGURATION.md` for all 100+ options with examples
 
 ---
 
@@ -223,47 +319,59 @@ PluginHub (Bukkit/Paper Plugin)
     ├─ CLI Command Handler (Async)
     │   ├─ /phsearch
     │   ├─ /phinstall
-    │   └─ /phupdate
+    │   ├─ /phupdate
+    │   └─ /pluginhub
     │
     ├─ Multi-API Orchestrator
-    │   ├─ SpigotMC API Client
-    │   ├─ Modrinth API Client
-    │   ├─ Hangar API Client
-    │   └─ BukkitDev Web Scraper
+    │   ├─ SpigotMC API Client (Spiget)
+    │   ├─ Modrinth API Client (v2)
+    │   ├─ Hangar API Client (PaperMC v1)
+    │   └─ BukkitDev Web Scraper (Jsoup)
     │
     ├─ Plugin Manager
-    │   ├─ Download Manager (HTTP)
+    │   ├─ Download Manager (OkHttp)
     │   ├─ File Installer
-    │   ├─ Dependency Resolver
-    │   └─ Update Checker
+    │   ├─ Update Checker
+    │   └─ Cache Manager
     │
     ├─ Performance Layer
-    │   ├─ Search Cache (Redis-compatible)
-    │   ├─ Connection Pooling
-    │   └─ Async Task Queue
+    │   ├─ Search Cache (ConcurrentHashMap)
+    │   ├─ Connection Pooling (OkHttp)
+    │   ├─ Thread Pool (ExecutorService)
+    │   └─ Async Task Queue (CompletableFuture)
     │
-    └─ Config & Security
+    ├─ Configuration System
+    │   ├─ ConfigManager (100+ options)
+    │   ├─ Message Customization
+    │   ├─ Source Toggle (enable/disable APIs)
+    │   └─ Performance Tuning
+    │
+    └─ Security & Validation
         ├─ YAML Config Parser
         ├─ SSL/TLS Validator
-        └─ Trusted Host Whitelist
+        ├─ Trusted Host Whitelist
+        └─ URL Validation
 ```
 
 **Tech Stack:**
 - **Language:** Java 21+
-- **Framework:** Bukkit/Paper API
-- **HTTP Client:** OkHttp 4.x
-- **JSON Parser:** Gson
-- **Build Tool:** Gradle
+- **Framework:** Bukkit/Paper API 1.21+
+- **HTTP Client:** OkHttp 4.11.0
+- **JSON Parser:** Gson 2.10.1
+- **HTML Parser:** Jsoup 1.16.1 (for BukkitDev)
+- **Build Tool:** Gradle 8.8
 - **Async Model:** CompletableFuture
-- **Concurrency:** ConcurrentHashMap, ThreadPoolExecutor
+- **Concurrency:** ConcurrentHashMap, ThreadPoolExecutor (5 threads)
 
 **Code Quality:**
 - ✅ JavaDoc on all public methods
-- ✅ Comprehensive error handling
-- ✅ Thread-safe operations
-- ✅ Null-safety checks
-- ✅ Dependency injection ready
-- ✅ Unit testable design
+- ✅ Comprehensive error handling with retry logic
+- ✅ Thread-safe operations (ConcurrentHashMap)
+- ✅ Null-safety checks (Objects.requireNonNull)
+- ✅ Builder pattern for complex objects
+- ✅ Exponential backoff for failed requests
+- ✅ Graceful degradation (if one API fails, others continue)
+- ✅ Clean shutdown with resource cleanup
 
 ---
 
@@ -312,23 +420,29 @@ cd PluginHub
 ### Project Structure
 ```
 src/main/java/com/pluginhub/
-├── PluginHub.java              # Main plugin class
-├── commands/                   # Command handlers
-│   ├── PluginHubCommand.java
-│   ├── PluginSearchCommand.java
-│   ├── PluginInstallCommand.java
-│   └── PluginUpdateCommand.java
-├── managers/                   # Business logic
-│   ├── PluginDownloader.java
-│   ├── RepositoryManager.java
-│   └── CacheManager.java
-├── models/                     # Data models
-│   ├── PluginInfo.java
-│   └── SearchResult.java
-└── utils/                      # Helpers
-    ├── HTTPClient.java
-    ├── ConfigManager.java
-    └── Logger.java
+├── PluginHub.java              # Main plugin class (initialization)
+├── commands/                   # Command handlers (async)
+│   ├── PluginHubCommand.java      # Main command + tab completion
+│   ├── PluginSearchCommand.java   # Multi-source search
+│   ├── PluginInstallCommand.java  # Auto-install with validation
+│   └── PluginUpdateCommand.java   # Update management
+├── managers/                   # Business logic layer
+│   └── PluginDownloader.java      # Download orchestrator + cache
+├── api/                        # External API clients
+│   ├── PluginSource.java          # Source enum (Spigot/Modrinth/etc)
+│   ├── SpigotAPI.java             # Spiget API client
+│   ├── ModrinthAPI.java           # Modrinth API v2 client
+│   ├── HangarAPI.java             # PaperMC Hangar API client
+│   └── BukkitAPI.java             # BukkitDev web scraper
+├── models/                     # Data models (immutable)
+│   └── PluginInfo.java            # Plugin metadata (Builder pattern)
+└── utils/                      # Utility classes
+    ├── ConfigManager.java         # Config with 100+ options
+    └── ColorLogger.java           # ANSI colored console output
+
+src/main/resources/
+├── plugin.yml                  # Bukkit plugin metadata
+└── config.yml                  # Default configuration (100+ options)
 ```
 
 ---
